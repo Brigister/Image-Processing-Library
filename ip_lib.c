@@ -2,36 +2,10 @@
  Created by Sebastiano Vascon on 23/03/20.
 */
 
-/* gregregerger */
 #include <stdio.h>
 #include "ip_lib.h"
 #include "bmp.h"
-/*test matrice
-int righe = 4;
-int colonne = 4;
-int altezza =4;
-int valore =10;
-int i,j,z;
-	
 
-		for (int i =0 ; i<colonne;i++)
-		{
-        arr3d[i] = (int**)malloc (colonne*sizeof(int*));
-    		  for (int j = 0;j<altezza;j++)
-    		  {
-      		  arr3d[i][j] = (int*)malloc (altezza*sizeof(int));
-		
-      		     for (int z =0;z<altezza;z++)
-       		     {
-           	  	 arr3d[i][j][z]   = valore;
-           		 printf("%d\n",arr3d[i][j][z]);
-       		     }	
-   		  }
-		
-		}
-
-*/
-	int ***arr3d = (int***)malloc(righe*sizeof(int**));
 void ip_mat_show(ip_mat *t)
 {
     unsigned int i, l, j;
@@ -140,4 +114,68 @@ float get_normal_random()
     float y1 = ((float)(rand()) + 1.) / ((float)(RAND_MAX) + 1.);
     float y2 = ((float)(rand()) + 1.) / ((float)(RAND_MAX) + 1.);
     return cos(2 * PI * y2) * sqrt(-2. * log(y1));
+}
+
+ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
+{
+    int i, j, z;
+
+    ip_mat *nuova = (ip_mat *)malloc(sizeof(ip_mat));
+
+    nuova->w = w;
+    nuova->h = h;
+    nuova->k = k;
+
+    stats *stat = (stats *)malloc(sizeof(stats) * k);
+
+    nuova->stat->min = v;
+    nuova->stat->max = v;
+    nuova->stat->mean = v;
+
+    nuova->stat = stat;
+
+    /* allocamento canali */
+    float ***data = (float ***)malloc(sizeof(float **) * k);
+    /* allocamento righe */
+    for (i = 0; i < w; i++)
+    {
+        data[i] = (float **)malloc(sizeof(float *) * w);
+        for (j = 0; j < h; j++)
+        {
+            /* allocamento colonne */
+            data[i][j] = (float *)malloc(sizeof(float) * h);
+            for (z = 0; z < k; z++)
+            {
+                data[i][j][z] = v;
+                printf("%f ", data[i][j][z]);
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
+
+    nuova->data = data;
+
+    /*       test matrice 
+    int righe = 4;
+    int colonne = 4;
+    int altezza = 4;
+    int valore = 10;
+    int i, j, z;
+
+    int ***arr3d = (int ***)malloc(righe * sizeof(int **));
+    for (int i = 0; i < colonne; i++)
+    {
+        arr3d[i] = (int **)malloc(colonne * sizeof(int *));
+        for (int j = 0; j < altezza; j++)
+        {
+            arr3d[i][j] = (int *)malloc(altezza * sizeof(int));
+
+            for (int z = 0; z < altezza; z++)
+            {
+                arr3d[i][j][z] = valore;
+                printf("%d\n", arr3d[i][j][z]);
+            }
+        }
+    } */
 }
