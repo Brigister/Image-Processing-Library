@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include "ip_lib.h"
 #include "bmp.h"
-
+/*modifica prova*/
 void ip_mat_show(ip_mat *t)
 {
     unsigned int i, l, j;
