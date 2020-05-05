@@ -14,7 +14,6 @@ int valore =10;
 int i,j,z;
 	
 
-	int ***arr3d = (int***)malloc(righe*sizeof(int**));
 		for (int i =0 ; i<colonne;i++)
 		{
         arr3d[i] = (int**)malloc (colonne*sizeof(int*));
@@ -32,6 +31,7 @@ int i,j,z;
 		}
 
 */
+	int ***arr3d = (int***)malloc(righe*sizeof(int**));
 void ip_mat_show(ip_mat *t)
 {
     unsigned int i, l, j;
