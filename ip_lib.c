@@ -6,7 +6,32 @@
 #include <stdio.h>
 #include "ip_lib.h"
 #include "bmp.h"
-/*modifica prova*/
+/*test matrice
+int righe = 4;
+int colonne = 4;
+int altezza =4;
+int valore =10;
+int i,j,z;
+	
+
+	int ***arr3d = (int***)malloc(righe*sizeof(int**));
+		for (int i =0 ; i<colonne;i++)
+		{
+        arr3d[i] = (int**)malloc (colonne*sizeof(int*));
+    		  for (int j = 0;j<altezza;j++)
+    		  {
+      		  arr3d[i][j] = (int*)malloc (altezza*sizeof(int));
+		
+      		     for (int z =0;z<altezza;z++)
+       		     {
+           	  	 arr3d[i][j][z]   = valore;
+           		 printf("%d\n",arr3d[i][j][z]);
+       		     }	
+   		  }
+		
+		}
+
+*/
 void ip_mat_show(ip_mat *t)
 {
     unsigned int i, l, j;
