@@ -118,7 +118,7 @@ float get_normal_random()
 
 ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
 {
-    int i, j, z;
+    int i, j, z, p;
 
     ip_mat *nuova = (ip_mat *)malloc(sizeof(ip_mat));
 
@@ -126,56 +126,131 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
     nuova->h = h;
     nuova->k = k;
 
+    /*allocamento stat*/
     stats *stat = (stats *)malloc(sizeof(stats) * k);
 
-    nuova->stat->min = v;
-    nuova->stat->max = v;
-    nuova->stat->mean = v;
-
-    nuova->stat = stat;
-
-    /* allocamento canali */
+    /*qualcosa*/
     float ***data = (float ***)malloc(sizeof(float **) * k);
-    /* allocamento righe */
-    for (i = 0; i < w; i++)
+    /* allocamento canali */
+    for (z = 0; z < k; z++)
     {
-        data[i] = (float **)malloc(sizeof(float *) * w);
-        for (j = 0; j < h; j++)
+        /*righe*/
+        for (i = 0; i < h; i++)
         {
+            data[i] = (float **)malloc(sizeof(float *) * h);
             /* allocamento colonne */
-            data[i][j] = (float *)malloc(sizeof(float) * h);
-            for (z = 0; z < k; z++)
+            for (j = 0; j < w; j++)
             {
+
+                data[i][j] = (float *)malloc(sizeof(float) * w);
+
                 data[i][j][z] = v;
-                printf("%f ", data[i][j][z]);
+                /*printf("%f ", data[i][j][z]);*/
             }
-            printf("\n");
+            /*printf("\n");*/
         }
-        printf("\n");
+        /*printf("nuova canala\n");*/
     }
 
     nuova->data = data;
 
-    /*       test matrice 
-    int righe = 4;
-    int colonne = 4;
-    int altezza = 4;
-    int valore = 10;
-    int i, j, z;
+    return nuova;
+}
 
-    int ***arr3d = (int ***)malloc(righe * sizeof(int **));
-    for (int i = 0; i < colonne; i++)
+void ip_mat_free(ip_mat *a)
+{
+    int i, j;
+
+    for (i = 0; i < a->k; i++)
     {
-        arr3d[i] = (int **)malloc(colonne * sizeof(int *));
-        for (int j = 0; j < altezza; j++)
+        for (j = 0; j < a->h; j++)
         {
-            arr3d[i][j] = (int *)malloc(altezza * sizeof(int));
+            free(a->data[i][j]);
+        }
+    }
+    free(a);
+    a = 0;
 
-            for (int z = 0; z < altezza; z++)
+    return 0;
+}
+
+float compute_min_data(ip_mat *t, int h, int w, int k)
+{
+    int i, j;
+
+    float min = get_val(t, 0, 0, k);
+    for (i = 0; i < h; i++)
+    {
+        for (j = 0; j < w; j++)
+        {
+            float temp = get_val(t, i, j, k);
+            if (min > temp)
             {
-                arr3d[i][j][z] = valore;
-                printf("%d\n", arr3d[i][j][z]);
+                min = temp;
             }
         }
-    } */
+    }
+    return min;
 }
+
+float compute_max_data(ip_mat *t, int h, int w, int k)
+{
+    int i, j;
+
+    float max = get_val(t, 0, 0, k);
+    for (i = 0; i < h; i++)
+    {
+        for (j = 0; j < w; j++)
+        {
+            float temp = get_val(t, i, j, k);
+            if (max < temp)
+            {
+                max = temp;
+            }
+        }
+    }
+    return max;
+}
+
+float compute_mean_data(ip_mat *t, int h, int w, int k)
+{
+    int i, j;
+
+    float acc = 0;
+    int counter = 0;
+
+    for (i = 0; i < h; i++)
+    {
+        for (j = 0; j < w; j++)
+        {
+            acc += get_val(t, i, j, k);
+            counter++;
+        }
+    }
+    return acc / counter;
+}
+
+/* Calcola il valore minimo, il massimo e la media per ogni canale
+ * e li salva dentro la struttura ip_mat stats
+ * */
+void compute_stats(ip_mat *t)
+{
+    int i;
+    for (i = 0; i < t->k; i++)
+    {
+        t->stat[i].min = compute_min_data(t, t->h, t->w, i);
+        t->stat[i].max = compute_max_data(t, t->h, t->w, i);
+        t->stat[i].mean = compute_mean_data(t, t->h, t->w, i);
+    }
+}
+
+void ip_mat_init_random(ip_mat *t, float mean, float var);
+
+ip_mat *ip_mat_copy(ip_mat *in);                                                                                              /*manuel*/
+ip_mat *ip_mat_subset(ip_mat *t, unsigned int row_start, unsigned int row_end, unsigned int col_start, unsigned int col_end); /*francesco*/
+ip_mat *ip_mat_concat(ip_mat *a, ip_mat *b, int dimensione);                                                                  /*francesco*/
+ip_mat *ip_mat_sum(ip_mat *a, ip_mat *b);                                                                                     /*simone*/
+ip_mat *ip_mat_sub(ip_mat *a, ip_mat *b);                                                                                     /*simone*/
+ip_mat *ip_mat_mul_scalar(ip_mat *a, float c);                                                                                /*riccardo*/
+ip_mat *ip_mat_add_scalar(ip_mat *a, float c);                                                                                /*riccardo*/
+ip_mat *ip_mat_mean(ip_mat *a, ip_mat *b);                                                                                    /*manuel*/
