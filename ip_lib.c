@@ -126,53 +126,63 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
     nuova->h = h;
     nuova->k = k;
 
+
     /*allocamento stat*/
+  
     stats *stat = (stats *)malloc(sizeof(stats) * k);
+    nuova->stat = stat;
 
     /*qualcosa*/
-    float ***data = (float ***)malloc(sizeof(float **) * k);
-    /* allocamento canali */
-    for (z = 0; z < k; z++)
-    {
-        /*righe*/
-        for (i = 0; i < h; i++)
-        {
-            data[i] = (float **)malloc(sizeof(float *) * h);
-            /* allocamento colonne */
-            for (j = 0; j < w; j++)
-            {
+    float*** A = (float***)malloc(h * sizeof(float**));
 
-                data[i][j] = (float *)malloc(sizeof(float) * w);
+	if (A == NULL) {
+		fprintf(stderr, "Out of memory");
+		exit(0);
+	}
 
-                data[i][j][z] = v;
-                /*printf("%f ", data[i][j][z]);*/
-            }
-            /*printf("\n");*/
-        }
-        /*printf("nuova canala\n");*/
-    }
+	for (int i = 0; i < h; i++)
+	{
+		A[i] = (float**)malloc(w * sizeof(float*));
+		if (A[i] == NULL) {
+			fprintf(stderr, "Out of memory");
+			exit(0);
+		}
 
-    nuova->data = data;
+		for (int j = 0; j < w; j++)
+		{
+			A[i][j] = (float*)malloc(k * sizeof(float));
+				if (A[i][j] == NULL) {
+				fprintf(stderr, "Out of memory");
+				exit(0);
+			}
+		}
+	}
+	
+	// assign values to allocated memory
+	for (int i = 0; i < h; i++)
+		for (int j = 0; j < w; j++)
+			for (int z = 0; z < k; z++)
+				A[i][j][z] = 99.9;
+
+	// print the 3D array
+	for (int i = 0; i < h; i++)
+	{
+		for (int j = 0; j < w; j++)
+		{
+			for (int z = 0; z < k; z++)
+				printf("%f ", A[i][j][z]);
+
+			printf("\n");
+			}
+		printf("\n");
+	}
+
+    nuova->data = A;
 
     return nuova;
 }
 
-void ip_mat_free(ip_mat *a)
-{
-    int i, j;
-
-    for (i = 0; i < a->k; i++)
-    {
-        for (j = 0; j < a->h; j++)
-        {
-            free(a->data[i][j]);
-        }
-    }
-    free(a);
-    a = 0;
-
-    return 0;
-}
+void ip_mat_free(ip_mat *a);
 
 float compute_min_data(ip_mat *t, int h, int w, int k)
 {
@@ -235,15 +245,20 @@ float compute_mean_data(ip_mat *t, int h, int w, int k)
  * */
 void compute_stats(ip_mat *t)
 {
-    int i;
-    for (i = 0; i < t->k; i++)
-    {
-        t->stat[i].min = compute_min_data(t, t->h, t->w, i);
-        t->stat[i].max = compute_max_data(t, t->h, t->w, i);
-        t->stat[i].mean = compute_mean_data(t, t->h, t->w, i);
-    }
-}
+    
 
+    t->stat[0].min = compute_min_data(t, t->h, t->w, 0);
+    t->stat[0].max = compute_max_data(t, t->h, t->w, 0);
+    t->stat[0].mean = compute_mean_data(t, t->h, t->w, 0);
+ 
+    t->stat[1].min = compute_min_data(t, t->h, t->w, 1);
+    t->stat[1].max = compute_max_data(t, t->h, t->w, 1);
+    t->stat[1].mean = compute_mean_data(t, t->h, t->w, 1); 
+
+    t->stat[2].min = compute_min_data(t, t->h, t->w, 2);
+    t->stat[2].max = compute_max_data(t, t->h, t->w, 2);
+    t->stat[2].mean = compute_mean_data(t, t->h, t->w, 2);
+}
 void ip_mat_init_random(ip_mat *t, float mean, float var);
 
 ip_mat *ip_mat_copy(ip_mat *in);                                                                                              /*manuel*/
