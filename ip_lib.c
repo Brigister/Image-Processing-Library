@@ -171,32 +171,30 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
 
     return nuova;
 }
+<<<<<<< Updated upstream
 
 /* Libera la memoria (data, stat e la struttura) */
 void ip_mat_free(ip_mat *a)
 {
     int i, j, z;
 
-    /*Struct stat liberata.*/
     free(a->stat);
     printf("struttura statistiche liberata\n");
 
-    /*libero la matrice!*/
-    for (z = 0; i < a->k; z++)
+
+
+    for (i = 0; i < a->h; i++)
     {
-        for (i = 0; i < a->h; i++)
+        for (j = 0; j < a->w; j++)
         {
-            for (j = 0; j < a->w; j++)
-            {
-                free(&(a->data[i][j][z]));
-            }
+            free((a->data[i][j]));
         }
+        free((a->data[i]));
     }
     printf("array liberato\n");
     free(a->data);
     printf("puntatore array liberato\n");
 }
-
 void ip_mat_show_stats(ip_mat *t)
 {
     unsigned int k;
@@ -237,6 +235,9 @@ void set_val(ip_mat *a, unsigned int i, unsigned int j, unsigned int k, float v)
         exit(1);
     }
 }
+=======
+void ip_mat_free(ip_mat *a);
+>>>>>>> Stashed changes
 
 float compute_min_data(ip_mat *t, int h, int w, int k)
 {

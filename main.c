@@ -78,43 +78,21 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
 
 void ip_mat_free(ip_mat *a)
 {
-    int i, j, z;
+   int i,j;
 
-    /*Struct stat liberata.*/
-    free(a->stat);
-    printf("struttura statistiche liberata\n");
-
-    /*libero la matrice!*/
-    for (z = 0; i < a->k; z++)
+    for(i=0;i<a->h;i++)
     {
-        for (i = 0; i < a->h; i++)
+        for(int j=0;j<a->w;j++)
         {
-            for (j = 0; j < a->w; j++)
-            {
-                free(&(a->data[i][j][z]));
-            }
+                free(a->data[i][j]);
         }
+        free(a->data[i]);
     }
-    printf("array liberato\n");
     free(a->data);
-    printf("puntatore array liberato\n");
+   free(a->stat);
+    
+   
 }
-
-void ip_mat_show_stats(ip_mat *t)
-{
-    unsigned int k;
-
-    compute_stats(t);
-
-    for (k = 0; k < t->k; k++)
-    {
-        printf("Channel %d:\n", k);
-        printf("\t Min: %f\n", t->stat[k].min);
-        printf("\t Max: %f\n", t->stat[k].max);
-        printf("\t Mean: %f\n", t->stat[k].mean);
-    }
-}
-
 float get_val(ip_mat *a, unsigned int i, unsigned int j, unsigned int k)
 {
     if (i < a->h && j < a->w && k < a->k)
@@ -422,6 +400,7 @@ int main()
     ip_mat *nuova = ip_mat_create(3, 2, 3, 22.22);
     ip_mat_show(nuova);
     ip_mat_free(nuova);
+    free(nuova);
 
     /* printf("sottomatrice---------------------------------\n");
 
