@@ -137,7 +137,7 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
 
 	if (A == NULL) {
 		fprintf(stderr, "Out of memory");
-		exit(0);
+		exit(1);
 	}
 
 	for (int i = 0; i < h; i++)
@@ -145,7 +145,7 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
 		A[i] = (float**)malloc(w * sizeof(float*));
 		if (A[i] == NULL) {
 			fprintf(stderr, "Out of memory");
-			exit(0);
+			exit(1);
 		}
 
 		for (int j = 0; j < w; j++)
@@ -153,36 +153,64 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
 			A[i][j] = (float*)malloc(k * sizeof(float));
 				if (A[i][j] == NULL) {
 				fprintf(stderr, "Out of memory");
-				exit(0);
+				exit(1);
 			}
 		}
 	}
 	
-	// assign values to allocated memory
+	/* assign values to allocated memory */
 	for (int i = 0; i < h; i++)
 		for (int j = 0; j < w; j++)
 			for (int z = 0; z < k; z++)
-				A[i][j][z] = 99.9;
+				A[i][j][z] = v;
+                /* MADONNA. */
+    
 
-	// print the 3D array
-	for (int i = 0; i < h; i++)
-	{
-		for (int j = 0; j < w; j++)
-		{
-			for (int z = 0; z < k; z++)
-				printf("%f ", A[i][j][z]);
-
-			printf("\n");
-			}
-		printf("\n");
-	}
-
-    nuova->data = A;
+    nuova->data = A;    
 
     return nuova;
 }
 
-void ip_mat_free(ip_mat *a);
+void ip_mat_show_stats(ip_mat *t)
+{
+    unsigned int k;
+
+    compute_stats(t);
+
+    for (k = 0; k < t->k; k++)
+    {
+        printf("Channel %d:\n", k);
+        printf("\t Min: %f\n", t->stat[k].min);
+        printf("\t Max: %f\n", t->stat[k].max);
+        printf("\t Mean: %f\n", t->stat[k].mean);
+    }
+}
+
+float get_val(ip_mat *a, unsigned int i, unsigned int j, unsigned int k)
+{
+    if (i < a->h && j < a->w && k < a->k)
+    { /* j>=0 and k>=0 and i>=0 is non sense*/
+        return a->data[i][j][k];
+    }
+    else
+    {
+        printf("Errore get_val!!!");
+        exit(1);
+    }
+}
+
+void set_val(ip_mat *a, unsigned int i, unsigned int j, unsigned int k, float v)
+{
+    if (i < a->h && j < a->w && k < a->k)
+    {
+        a->data[i][j][k] = v;
+    }
+    else
+    {
+        printf("Errore set_val!!!");
+        exit(1);
+    }
+}
 
 float compute_min_data(ip_mat *t, int h, int w, int k)
 {
@@ -240,32 +268,67 @@ float compute_mean_data(ip_mat *t, int h, int w, int k)
     return acc / counter;
 }
 
-/* Calcola il valore minimo, il massimo e la media per ogni canale
- * e li salva dentro la struttura ip_mat stats
- * */
 void compute_stats(ip_mat *t)
 {
+    int i;
+
+    for(i = 0; i < t->k; i++){
     
-
-    t->stat[0].min = compute_min_data(t, t->h, t->w, 0);
-    t->stat[0].max = compute_max_data(t, t->h, t->w, 0);
-    t->stat[0].mean = compute_mean_data(t, t->h, t->w, 0);
+    t->stat[i].min = compute_min_data(t, t->h, t->w,i);
+    t->stat[i].max = compute_max_data(t, t->h, t->w, i);
+    t->stat[i].mean = compute_mean_data(t, t->h, t->w, i);
  
-    t->stat[1].min = compute_min_data(t, t->h, t->w, 1);
-    t->stat[1].max = compute_max_data(t, t->h, t->w, 1);
-    t->stat[1].mean = compute_mean_data(t, t->h, t->w, 1); 
-
-    t->stat[2].min = compute_min_data(t, t->h, t->w, 2);
-    t->stat[2].max = compute_max_data(t, t->h, t->w, 2);
-    t->stat[2].mean = compute_mean_data(t, t->h, t->w, 2);
+    }
 }
-void ip_mat_init_random(ip_mat *t, float mean, float var);
+
+ip_mat *ip_mat_sum(ip_mat *a, ip_mat *b){  
+    
+    int i,j,z;
+    
+    /*creo una matrice di dimensione uguale ad A e la setto tutta 0*/
+    ip_mat *sum=ip_mat_create(a->h, a->w, a->k, 00.0);
+    
+    for(z=0;z<sum->k;z++){
+        for (i = 0; i < sum->h; i++)
+        {
+            for (j = 0; j < sum->w; j++)
+            {
+                /*setto in posizione (scorri for) la somma della medesima posizione di *A e *B*/
+                set_val(sum,i,j,z,(get_val(a, i, j, z)+get_val(b, i, j, z)));
+            }
+        }
+    }
+    return sum;
+}
+
+ip_mat *ip_mat_sub(ip_mat *a, ip_mat *b){    
+    
+    int i,j,z;
+    
+    /*creo una matrice di dimensione uguale ad A e la setto tutta 0*/
+    ip_mat *sub=ip_mat_create(a->h, a->w, a->k, 00.0);
+    
+    for(z=0;z<sub->k;z++){
+        for (i = 0; i < sub->h; i++)
+        {
+            for (j = 0; j < sub->w; j++)
+            {
+                /*setto in posizione (scorri for) la sottrazione della medesima posizione di *A e *B*/
+                set_val(sub,i,j,z,(get_val(a, i, j, z)-get_val(b, i, j, z)));
+            }
+        }
+    }
+    return sub;
+}
+
+
+
 
 ip_mat *ip_mat_copy(ip_mat *in);                                                                                              /*manuel*/
 ip_mat *ip_mat_subset(ip_mat *t, unsigned int row_start, unsigned int row_end, unsigned int col_start, unsigned int col_end); /*francesco*/
 ip_mat *ip_mat_concat(ip_mat *a, ip_mat *b, int dimensione);                                                                  /*francesco*/
-ip_mat *ip_mat_sum(ip_mat *a, ip_mat *b);                                                                                     /*simone*/
-ip_mat *ip_mat_sub(ip_mat *a, ip_mat *b);                                                                                     /*simone*/
+
+
 ip_mat *ip_mat_mul_scalar(ip_mat *a, float c);                                                                                /*riccardo*/
 ip_mat *ip_mat_add_scalar(ip_mat *a, float c);                                                                                /*riccardo*/
 ip_mat *ip_mat_mean(ip_mat *a, ip_mat *b);                                                                                    /*manuel*/
