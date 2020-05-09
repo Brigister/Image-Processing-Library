@@ -171,7 +171,6 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
 
     return nuova;
 }
-<<<<<<< Updated upstream
 
 /* Libera la memoria (data, stat e la struttura) */
 void ip_mat_free(ip_mat *a)
@@ -180,8 +179,6 @@ void ip_mat_free(ip_mat *a)
 
     free(a->stat);
     printf("struttura statistiche liberata\n");
-
-
 
     for (i = 0; i < a->h; i++)
     {
@@ -235,9 +232,6 @@ void set_val(ip_mat *a, unsigned int i, unsigned int j, unsigned int k, float v)
         exit(1);
     }
 }
-=======
-void ip_mat_free(ip_mat *a);
->>>>>>> Stashed changes
 
 float compute_min_data(ip_mat *t, int h, int w, int k)
 {
@@ -507,49 +501,112 @@ ip_mat *ip_mat_concat(ip_mat *a, ip_mat *b, int dimensione)
     return concatenata;
 }
 
-ip_mat *ip_mat_copy(ip_mat *in);           /*manuel*/
-ip_mat *ip_mat_mean(ip_mat *a, ip_mat *b); /*manuel*/
+ip_mat *ip_mat_copy(ip_mat *in)
+{
 
-ip_mat *ip_mat_mul_scalar(ip_mat *a, float c){
-      int i,j,z;
-      float supp;
-      int h=a->h;
-      int w=a->w;
-      int k=a->k;
-      ip_mat *nuova_ms = ip_mat_create(h, w, k, 9.9);
-      for(i=0;i<h;i++){
-         for(j=0;j<w;j++){
-            for(z=0;z<k;z++){
-               supp=get_val(a,i,j,z);
-               set_val(nuova_ms,i,j,z,supp*c);
+    /*  variabili di scorrimento per i cicli */
+
+    int i, j, z;
+
+    /* creo una nuova matrice di dimensioni uguali a quella data e la inizializzo a 0 */
+
+    ip_mat *copy = ip_mat_create(in->h, in->w, in->k, 00.0);
+
+    /* setto i valori della matrice copy nella posizione data dal ciclo for  uguali a quelli della matrice in ingresso */
+
+    for (z = 0; z < copy->k; z++)
+    {
+        for (i = 0; i < copy->h; i++)
+        {
+            for (j = 0; j < copy->w; j++)
+            {
+                set_val(copy, i, j, z, (get_val(in, i, j, z)));
             }
-         }
-      }
-      
-      return nuova_ms;   
-      
+        }
+    }
+    return copy;
 }
 
-ip_mat *ip_mat_add_scalar(ip_mat *a, float c){
-      int i,j,z;
-      float supp;
-      int h=a->h;
-      int w=a->w;
-      int k=a->k;
-      ip_mat *nuova_as = ip_mat_create(h, w, k, 9.9);
-      for(i=0;i<h;i++){
-         for(j=0;j<w;j++){
-            for(z=0;z<k;z++){
-               supp=get_val(a,i,j,z);
-               set_val(nuova_as,i,j,z,supp+c);
+ip_mat *ip_mat_mean(ip_mat *a, ip_mat *b)
+{
+
+    /* variabili di scorrimento */
+
+    int i, j, z;
+
+    /* verifico che le matrici date siano della stessa dimensione, altrimenti ritorno un printf di errore  */
+
+    if (a->h != b->h || a->w != b->w || a->k != b->k)
+    {
+        printf("Matrici con dimensioni diverse\n");
+        exit(1);
+    }
+    else
+    {
+        /* creo una nuova matrice di dimensione uguale a quelle date e la inizializzo a 0  */
+
+        ip_mat *media = ip_mat_create(a->h, a->w, a->k, 00.0);
+
+        /* setto i valori della matrice media nella posizione data dal ciclo for con i valori dati  dalle media di a e b */
+
+        for (z = 0; z < media->k; z++)
+        {
+            for (i = 0; i < media->h; i++)
+            {
+                for (j = 0; j < media->w; j++)
+                {
+
+                    set_val(media, i, j, z, ((get_val(a, i, j, z) + get_val(b, i, j, z)) / 2));
+                }
             }
-         }
-      }
-      
-      return nuova_as;       
-}      
-    
-      
-       
+        }
+        /* ritorno la matrice  media in output */
+        return media;
+    }
+}
 
+ip_mat *ip_mat_mul_scalar(ip_mat *a, float c)
+{
+    int i, j, z;
+    float supp;
+    int h = a->h;
+    int w = a->w;
+    int k = a->k;
+    ip_mat *nuova_ms = ip_mat_create(h, w, k, 9.9);
+    for (i = 0; i < h; i++)
+    {
+        for (j = 0; j < w; j++)
+        {
+            for (z = 0; z < k; z++)
+            {
+                supp = get_val(a, i, j, z);
+                set_val(nuova_ms, i, j, z, supp * c);
+            }
+        }
+    }
 
+    return nuova_ms;
+}
+
+ip_mat *ip_mat_add_scalar(ip_mat *a, float c)
+{
+    int i, j, z;
+    float supp;
+    int h = a->h;
+    int w = a->w;
+    int k = a->k;
+    ip_mat *nuova_as = ip_mat_create(h, w, k, 9.9);
+    for (i = 0; i < h; i++)
+    {
+        for (j = 0; j < w; j++)
+        {
+            for (z = 0; z < k; z++)
+            {
+                supp = get_val(a, i, j, z);
+                set_val(nuova_as, i, j, z, supp + c);
+            }
+        }
+    }
+
+    return nuova_as;
+}
