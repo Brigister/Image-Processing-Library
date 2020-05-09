@@ -90,6 +90,7 @@ void ip_mat_free(ip_mat *a)
     }
     free(a->data);
    free(a->stat);
+   free(a);
     
    
 }
@@ -387,6 +388,46 @@ ip_mat *ip_mat_concat(ip_mat *a, ip_mat *b, int dimensione)
 
     return concatenata;
 }
+ip_mat *ip_mat_mul_scalar(ip_mat *a, float c){
+      int i,j,z;
+      float supp;
+      int h=a->h;
+      int w=a->w;
+      int k=a->k;
+      ip_mat *nuova_ms = ip_mat_create(h, w, k, 9.9);
+      for(i=0;i<h;i++){
+         for(j=0;j<w;j++){
+            for(z=0;z<k;z++){
+               supp=get_val(a,i,j,z);
+               set_val(nuova_ms,i,j,z,supp*c);
+            }
+         }
+      }
+      
+      return nuova_ms;   
+      
+}
+
+ip_mat *ip_mat_add_scalar(ip_mat *a, float c){
+      int i,j,z;
+      float supp;
+      int h=a->h;
+      int w=a->w;
+      int k=a->k;
+      ip_mat *nuova_as = ip_mat_create(h, w, k, 9.9);
+      for(i=0;i<h;i++){
+         for(j=0;j<w;j++){
+            for(z=0;z<k;z++){
+               supp=get_val(a,i,j,z);
+               set_val(nuova_as,i,j,z,supp+c);
+            }
+         }
+      }
+      
+      return nuova_as;       
+}      
+    
+      
 
 int main()
 {
@@ -395,12 +436,11 @@ int main()
     ip_mat *sub;
     ip_mat *sub_mat;
     ip_mat *concatenata;
-
     printf("NUOVA \n");
     ip_mat *nuova = ip_mat_create(3, 2, 3, 22.22);
     ip_mat_show(nuova);
     ip_mat_free(nuova);
-    free(nuova);
+   
 
     /* printf("sottomatrice---------------------------------\n");
 
