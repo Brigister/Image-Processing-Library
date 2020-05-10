@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "ip_lib.h"
+#include "bmp.c"
 
 void ip_mat_show(ip_mat *t)
 {
@@ -31,7 +32,6 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
     nuova->k = k;
 
     /*allocamento stat*/
-
     stats *stat = (stats *)malloc(sizeof(stats) * k);
     nuova->stat = stat;
 
@@ -247,11 +247,6 @@ ip_mat *ip_mat_sub(ip_mat *a, ip_mat *b)
     }
 }
 
-/* Restituisce una sotto-matrice, ovvero la porzione individuata da:
- * t->data[row_start...row_end][col_start...col_end][0...k]
- * La terza dimensione la riportiamo per intero, stiamo in sostanza prendendo un sottoinsieme
- * delle righe e delle colonne.
- * */
 ip_mat *ip_mat_subset(ip_mat *t, unsigned int row_start, unsigned int row_end, unsigned int col_start, unsigned int col_end)
 {
 
@@ -260,7 +255,6 @@ ip_mat *ip_mat_subset(ip_mat *t, unsigned int row_start, unsigned int row_end, u
     if (row_start >= 0 && row_start <= row_end && row_end <= t->h && col_start >= 0 && col_start <= col_end && col_end < t->w)
     {
         ip_mat *sub_mat = ip_mat_create(row_end, col_end, t->k, 0);
-        /*NON SONO SICURO DEL -1 https://moodle.unive.it/mod/forum/discuss.php?d=63261 */
         for (z = 0; z < sub_mat->k; z++)
         {
             for (i = 0; i < sub_mat->h; i++)
@@ -275,7 +269,7 @@ ip_mat *ip_mat_subset(ip_mat *t, unsigned int row_start, unsigned int row_end, u
     }
     else
     {
-        printf("Valori non accettabili!\n");
+        printf("Valori non accettabili\n");
         exit(1);
     }
 }
@@ -389,9 +383,7 @@ ip_mat *ip_mat_concat(ip_mat *a, ip_mat *b, int dimensione)
 
 ip_mat *ip_mat_copy(ip_mat *in)
 {
-
     /*  variabili di scorrimento per i cicli */
-
     int i, j, z;
 
     /* creo una nuova matrice di dimensioni uguali a quella data e la inizializzo a 0 */
@@ -497,6 +489,136 @@ ip_mat *ip_mat_add_scalar(ip_mat *a, float c)
     return nuova_as;
 }
 
+float get_normal_random()
+{
+    float y1 = ((float)(rand()) + 1.) / ((float)(RAND_MAX) + 1.);
+    float y2 = ((float)(rand()) + 1.) / ((float)(RAND_MAX) + 1.);
+    return cos(2 * PI * y2) * sqrt(-2. * log(y1));
+}
+
+void ip_mat_init_random(ip_mat *t, float mean, float var)
+{
+    int i, j, k;
+    float supp;
+
+    for (int i = 0; i < t->h; i++)
+        for (int j = 0; j < t->w; j++)
+            for (int z = 0; z < t->k; z++)
+            {
+                /* supp = gauss(mean, var); */
+                float acaso = get_normal_random();
+                acaso = acaso * var + mean;
+                t->data[i][j][z] = acaso;
+                set_val(t, i, j, z, supp);
+            }
+}
+
+ip_mat *bitmap_to_ip_mat(Bitmap *img)
+{
+    unsigned int i = 0, j = 0;
+
+    unsigned char R, G, B;
+
+    unsigned int h = img->h;
+    unsigned int w = img->w;
+
+    ip_mat *out = ip_mat_create(h, w, 3, 0);
+
+    for (i = 0; i < h; i++) /* rows */
+    {
+        for (j = 0; j < w; j++) /* columns */
+        {
+            bm_get_pixel(img, j, i, &R, &G, &B);
+            set_val(out, i, j, 0, (float)R);
+            set_val(out, i, j, 1, (float)G);
+            set_val(out, i, j, 2, (float)B);
+        }
+    }
+
+    return out;
+}
+
+Bitmap *ip_mat_to_bitmap(ip_mat *t)
+{
+
+    Bitmap *b = bm_create(t->w, t->h);
+
+    unsigned int i, j;
+    for (i = 0; i < t->h; i++) /* rows */
+    {
+        for (j = 0; j < t->w; j++) /* columns */
+        {
+            bm_set_pixel(b, j, i, (unsigned char)get_val(t, i, j, 0),
+                         (unsigned char)get_val(t, i, j, 1),
+                         (unsigned char)get_val(t, i, j, 2));
+        }
+    }
+    return b;
+}
+
+void clamp(ip_mat *t, float low, float high)
+{
+    int i, j, k;
+
+    for (int i = 0; i < t->h; i++)
+        for (int j = 0; j < t->w; j++)
+            for (int z = 0; z < t->k; z++)
+            {
+                if (t->data[i][j][z] > high)
+                {
+                    t->data[i][j][z] = high;
+                }
+                if (t->data[i][j][z] < low)
+                {
+                    t->data[i][j][z] = low;
+                }
+            }
+}
+
+ip_mat *ip_mat_brighten(ip_mat *a, float bright)
+{
+    ip_mat *copy = ip_mat_copy(a);
+
+    ip_mat *result = ip_mat_add_scalar(copy, bright);
+    clamp(result, 0, 255);
+    return result;
+}
+
+void ip_mat_show_stats(ip_mat *t)
+{
+    unsigned int k;
+
+    compute_stats(t);
+
+    for (k = 0; k < t->k; k++)
+    {
+        printf("Channel %d:\n", k);
+        printf("\t Min: %f\n", t->stat[k].min);
+        printf("\t Max: %f\n", t->stat[k].max);
+        printf("\t Mean: %f\n", t->stat[k].mean);
+    }
+}
+
+/*Salve, stiamo riscontrando dei problemi nell'implementare la corrupt. 
+Per generare la gaussnoise utilizziamo la init random creata precedentemente 
+nella parte 1 del progetto. Però al momento di testare un ipotetico main 
+utilizziamo come varianza l'amount fornita come parametro mentre non sappiamo 
+che valore assegnare alla media nella chiamata ad initi random dentro la corrupt. 
+Stiamo andando nella direzione corretta?*/
+
+ip_mat *ip_mat_corrupt(ip_mat *a, float amount)
+{
+    float media;
+    ip_mat *copy = ip_mat_copy(a);
+
+    ip_mat *random = ip_mat_create(a->h, a->w, a->k, 0);
+    ip_mat_init_random(random, media, amount);
+    ip_mat *result = ip_mat_sum(copy, random);
+    clamp(result, 0, 255);
+
+    return result;
+}
+
 int main()
 {
     int i;
@@ -504,10 +626,30 @@ int main()
     ip_mat *sub;
     ip_mat *sub_mat;
     ip_mat *concatenata;
-    printf("NUOVA \n");
+    /*     printf("NUOVA \n");
     ip_mat *nuova = ip_mat_create(3, 2, 3, 22.22);
     ip_mat_show(nuova);
-    ip_mat_free(nuova);
+    ip_mat_init_random(nuova, 20.0, 3.0);
+    ip_mat_show(nuova); */
+
+    /* bitmap->ip_mat->operazione->bitmap */
+
+    Bitmap *b = NULL;
+    ip_mat *input_img = NULL;
+
+    b = bm_load("flower.bmp");
+    input_img = bitmap_to_ip_mat(b);
+    ip_mat_show_stats(input_img);
+    ip_mat *bright = ip_mat_corrupt(input_img, 255.0);
+    ip_mat_show_stats(bright);
+
+    Bitmap *bmbright = ip_mat_to_bitmap(bright);
+    bm_save(bmbright, "flower_corrupted.bmp");
+
+    bm_free(b);
+    bm_free(bmbright);
+    ip_mat_free(input_img);
+    ip_mat_free(bright);
 
     /* printf("sottomatrice---------------------------------\n");
 

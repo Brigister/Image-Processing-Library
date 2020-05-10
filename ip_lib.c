@@ -610,3 +610,52 @@ ip_mat *ip_mat_add_scalar(ip_mat *a, float c)
 
     return nuova_as;
 }
+
+void ip_mat_init_random(ip_mat *t, float mean, float var)
+{
+    int i, j, k;
+
+    for (int i = 0; i < t->h; i++)
+        for (int j = 0; j < t->w; j++)
+            for (int z = 0; z < t->k; z++)
+            {
+
+                float acaso = get_normal_random();
+                acaso = acaso * var + mean;
+                t->data[i][j][z] = acaso;
+            }
+}
+
+void clamp(ip_mat *t, float low, float high)
+{
+    int i, j, k;
+
+    for (int i = 0; i < t->h; i++)
+        for (int j = 0; j < t->w; j++)
+            for (int z = 0; z < t->k; z++)
+            {
+                if (t->data[i][j][z] > high)
+                {
+                    t->data[i][j][z] = high;
+                }
+                if (t->data[i][j][z] < low)
+                {
+                    t->data[i][j][z] = low;
+                }
+            }
+}
+
+ip_mat *ip_mat_to_gray_scale(ip_mat *in); /* riccardo */
+
+ip_mat *ip_mat_blend(ip_mat *a, ip_mat *b, float alpha); /* francesco e simone */
+
+ip_mat *ip_mat_brighten(ip_mat *a, float bright)
+{
+    ip_mat *copy = ip_mat_copy(a);
+
+    ip_mat *result = ip_mat_add_scalar(copy, bright);
+    clamp(result, 0.0, 255.0);
+    return result;
+}
+
+ip_mat *ip_mat_corrupt(ip_mat *a, float amount);
