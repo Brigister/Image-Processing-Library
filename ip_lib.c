@@ -91,7 +91,7 @@ float get_val(ip_mat *a, unsigned int i, unsigned int j, unsigned int k)
     }
     else
     {
-        printf("Errore get_val!!!");
+        printf("Errore get_val!\n");
         exit(1);
     }
 }
@@ -104,7 +104,7 @@ void set_val(ip_mat *a, unsigned int i, unsigned int j, unsigned int k, float v)
     }
     else
     {
-        printf("Errore set_val!!!");
+        printf("Errore set_val!\n");
         exit(1);
     }
 }
@@ -131,12 +131,12 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
     stats *stat = (stats *)malloc(sizeof(stats) * k);
     nuova->stat = stat;
 
-    /*qualcosa*/
+    /*creazione*/
     float ***data = (float ***)malloc(h * sizeof(float **));
 
     if (data == NULL)
     {
-        printf("Out of memory");
+        printf("Ritenta, sarai più fortunato");
         exit(1);
     }
 
@@ -145,7 +145,7 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
         data[i] = (float **)malloc(w * sizeof(float *));
         if (data[i] == NULL)
         {
-            printf("Out of memory");
+            printf("Ritenta, sarai più fortunato");
             exit(1);
         }
 
@@ -154,7 +154,7 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
             data[i][j] = (float *)malloc(k * sizeof(float));
             if (data[i][j] == NULL)
             {
-                printf("Out of memory");
+                printf("Ritenta, sarai più fortunato");
                 exit(1);
             }
         }
@@ -165,7 +165,6 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
         for (int j = 0; j < w; j++)
             for (int z = 0; z < k; z++)
                 data[i][j][z] = v;
-    /* MADONNA. */
 
     nuova->data = data;
 
@@ -191,46 +190,6 @@ void ip_mat_free(ip_mat *a)
     printf("array liberato\n");
     free(a->data);
     printf("puntatore array liberato\n");
-}
-void ip_mat_show_stats(ip_mat *t)
-{
-    unsigned int k;
-
-    compute_stats(t);
-
-    for (k = 0; k < t->k; k++)
-    {
-        printf("Channel %d:\n", k);
-        printf("\t Min: %f\n", t->stat[k].min);
-        printf("\t Max: %f\n", t->stat[k].max);
-        printf("\t Mean: %f\n", t->stat[k].mean);
-    }
-}
-
-float get_val(ip_mat *a, unsigned int i, unsigned int j, unsigned int k)
-{
-    if (i < a->h && j < a->w && k < a->k)
-    { /* j>=0 and k>=0 and i>=0 is non sense*/
-        return a->data[i][j][k];
-    }
-    else
-    {
-        printf("Errore get_val!!!");
-        exit(1);
-    }
-}
-
-void set_val(ip_mat *a, unsigned int i, unsigned int j, unsigned int k, float v)
-{
-    if (i < a->h && j < a->w && k < a->k)
-    {
-        a->data[i][j][k] = v;
-    }
-    else
-    {
-        printf("Errore set_val!!!");
-        exit(1);
-    }
 }
 
 float compute_min_data(ip_mat *t, int h, int w, int k)
@@ -304,10 +263,6 @@ void compute_stats(ip_mat *t)
 
 ip_mat *ip_mat_sum(ip_mat *a, ip_mat *b)
 {
-    /*VA FATTA UNA NUOVA MATRICE O NO??*/
-    /*VA FATTA UNA NUOVA MATRICE O NO??*/
-    /*VA FATTA UNA NUOVA MATRICE O NO??*/
-
     int i, j, z;
     if (a->h != b->h || a->w != b->w || a->k != b->k)
     {
@@ -337,10 +292,6 @@ ip_mat *ip_mat_sum(ip_mat *a, ip_mat *b)
 
 ip_mat *ip_mat_sub(ip_mat *a, ip_mat *b)
 {
-    /*VA FATTA UNA NUOVA MATRICE O NO??*/
-    /*VA FATTA UNA NUOVA MATRICE O NO??*/
-    /*VA FATTA UNA NUOVA MATRICE O NO??*/
-
     int i, j, z;
     if (a->h != b->h || a->w != b->w || a->k != b->k)
     {
@@ -375,7 +326,7 @@ ip_mat *ip_mat_subset(ip_mat *t, unsigned int row_start, unsigned int row_end, u
     if (row_start >= 0 && row_start <= row_end && row_end <= t->h && col_start >= 0 && col_start <= col_end && col_end < t->w)
     {
         ip_mat *sub_mat = ip_mat_create(row_end, col_end, t->k, 0);
-        /*NON SONO SICURO DEL -1 https://moodle.unive.it/mod/forum/discuss.php?d=63261 */
+        /*https://moodle.unive.it/mod/forum/discuss.php?d=63261 */
         for (z = 0; z < sub_mat->k; z++)
         {
             for (i = 0; i < sub_mat->h; i++)
@@ -620,9 +571,9 @@ void ip_mat_init_random(ip_mat *t, float mean, float var)
             for (int z = 0; z < t->k; z++)
             {
 
-                float acaso = get_normal_random();
-                acaso = acaso * var + mean;
-                t->data[i][j][z] = acaso;
+                float rand = get_normal_random();
+                rand = rand * var + mean;
+                t->data[i][j][z] = rand;
             }
 }
 
@@ -631,7 +582,9 @@ void clamp(ip_mat *t, float low, float high)
     int i, j, k;
 
     for (int i = 0; i < t->h; i++)
+    {
         for (int j = 0; j < t->w; j++)
+        {
             for (int z = 0; z < t->k; z++)
             {
                 if (t->data[i][j][z] > high)
@@ -643,11 +596,38 @@ void clamp(ip_mat *t, float low, float high)
                     t->data[i][j][z] = low;
                 }
             }
+        }
+    }
+}
+
+ip_mat *ip_mat_blend(ip_mat *a, ip_mat *b, float alpha)
+{
+    if (alpha < 0.0 || alpha > 1.0)
+    {
+        printf("Valore blend non corretto");
+        exit(1);
+    }
+    else
+    {
+        int i, j, z;
+
+        ip_mat *blend = ip_mat_create(a->h, a->w, a->k, 0);
+
+        for (int i = 0; i < a->h; i++)
+            for (int j = 0; j < a->w; j++)
+                for (int z = 0; z < a->k; z++)
+                {
+                    /*bait*/
+                    float ercole = alpha * get_val(a, i, j, z);
+                    float filottete = (1 - alpha) * get_val(b, i, j, z);
+                    set_val(blend, i, j, z, ercole + filottete);
+                }
+        clamp(blend, 0, 255);
+        return blend;
+    }
 }
 
 ip_mat *ip_mat_to_gray_scale(ip_mat *in); /* riccardo */
-
-ip_mat *ip_mat_blend(ip_mat *a, ip_mat *b, float alpha); /* francesco e simone */
 
 ip_mat *ip_mat_brighten(ip_mat *a, float bright)
 {
@@ -658,4 +638,60 @@ ip_mat *ip_mat_brighten(ip_mat *a, float bright)
     return result;
 }
 
-ip_mat *ip_mat_corrupt(ip_mat *a, float amount);
+ip_mat *ip_mat_corrupt(ip_mat *a, float amount)
+{
+    float media;
+    ip_mat *copy = ip_mat_copy(a);
+
+    ip_mat *random = ip_mat_create(a->h, a->w, a->k, 0);
+    ip_mat_init_random(random, media, amount);
+    ip_mat *result = ip_mat_sum(copy, random);
+    clamp(result, 0, 255);
+
+    return result;
+}
+
+/*---------------------------------------PARTE 3 -----------------------------------------*/
+
+/* Effettua la convoluzione di un ip_mat "a" con un ip_mat "f".
+ * La funzione restituisce un ip_mat delle stesse dimensioni di "a".
+ * */
+ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f);
+
+/* Aggiunge un padding all'immagine. Il padding verticale è pad_h mentre quello
+ * orizzontale è pad_w.
+ * L'output sarà un'immagine di dimensioni:
+ *      out.h = a.h + 2*pad_h;
+ *      out.w = a.w + 2*pad_w;
+ *      out.k = a.k
+ * con valori nulli sui bordi corrispondenti al padding e l'immagine "a" riportata
+ * nel centro
+ * */
+ip_mat *ip_mat_padding(ip_mat *a, int pad_h, int pad_w);
+
+/* Crea un filtro di sharpening */
+ip_mat *create_sharpen_filter();
+
+/* Crea un filtro per rilevare i bordi */
+ip_mat *create_edge_filter();
+
+/* Crea un filtro per aggiungere profondità */
+ip_mat *create_emboss_filter();
+
+/* Crea un filtro medio per la rimozione del rumore */
+ip_mat *create_average_filter(int w, int h, int k);
+
+/* Crea un filtro gaussiano per la rimozione del rumore */
+ip_mat *create_gaussian_filter(int w, int h, int k, float sigma);
+
+/* Effettua una riscalatura dei dati tale che i valori siano in [0,new_max].
+ * Utilizzate il metodo compute_stat per ricavarvi il min, max per ogni canale.
+ *
+ * I valori sono scalati tramite la formula valore-min/(max - min)
+ *
+ * Si considera ogni indice della terza dimensione indipendente, quindi l'operazione
+ * di scalatura va ripetuta per ogni "fetta" della matrice 3D.
+ * Successivamente moltiplichiamo per new_max gli elementi della matrice in modo da ottenere un range
+ * di valori in [0,new_max].
+ * */
+void rescale(ip_mat *t, float new_max);
