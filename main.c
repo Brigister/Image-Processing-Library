@@ -28,19 +28,32 @@ int main()
     c = bm_load("mongolfiere.bmp");
     input_img = bitmap_to_ip_mat(b);
     input_img2 = bitmap_to_ip_mat(c);
+  
 
-    ip_mat *blend = ip_mat_blend(input_img, input_img2, 0);
+    ip_mat *blend = ip_mat_blend(input_img, input_img, 0);
     ip_mat_show_stats(blend);
-
     Bitmap *bmblend = ip_mat_to_bitmap(blend);
     bm_save(bmblend, "blended.bmp");
 
+
+    ip_mat *gray = ip_mat_to_gray_scale(input_img);
+    ip_mat_show_stats(gray);
+    Bitmap *bmgray = ip_mat_to_bitmap(gray);
+    bm_save(bmgray, "togray.bmp");
+
+
+    
     bm_free(b);
     bm_free(c);
     bm_free(bmblend);
+    bm_free(bmgray);
+   
     ip_mat_free(input_img);
     ip_mat_free(input_img2);
     ip_mat_free(blend);
+    ip_mat_free(gray);
+
+
 
     /* printf("sottomatrice---------------------------------\n");
 

@@ -230,6 +230,8 @@ float compute_max_data(ip_mat *t, int h, int w, int k)
     return max;
 }
 
+
+
 float compute_mean_data(ip_mat *t, int h, int w, int k)
 {
     int i, j;
@@ -627,7 +629,20 @@ ip_mat *ip_mat_blend(ip_mat *a, ip_mat *b, float alpha)
     }
 }
 
-ip_mat *ip_mat_to_gray_scale(ip_mat *in); /* riccardo */
+ip_mat *ip_mat_to_gray_scale(ip_mat *in){
+    ip_mat *result = ip_mat_create(in->h, in->w, in->k, 0);
+    int i, j, z;
+    
+    for (i=0;i<in->h;i++){
+       for(j=0;j<in->w;j++){
+             result->data[i][j][0]= (get_val(in,i,j,0)+get_val(in,i,j,1)+get_val(in,i,j,2))/3;
+             result->data[i][j][1]= (get_val(in,i,j,0)+get_val(in,i,j,1)+get_val(in,i,j,2))/3;
+             result->data[i][j][2]= (get_val(in,i,j,0)+get_val(in,i,j,1)+get_val(in,i,j,2))/3;      
+       }
+    }
+    clamp(result, 0, 255);
+    return result;
+}
 
 ip_mat *ip_mat_brighten(ip_mat *a, float bright)
 {
