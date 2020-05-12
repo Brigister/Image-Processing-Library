@@ -230,8 +230,6 @@ float compute_max_data(ip_mat *t, int h, int w, int k)
     return max;
 }
 
-
-
 float compute_mean_data(ip_mat *t, int h, int w, int k)
 {
     int i, j;
@@ -604,9 +602,14 @@ void clamp(ip_mat *t, float low, float high)
 
 ip_mat *ip_mat_blend(ip_mat *a, ip_mat *b, float alpha)
 {
-    if (alpha < 0.0 || alpha > 1.0)
+    if (a->h != b->h || a->w != b->w || a->k != b->k)
     {
-        printf("Valore blend non corretto");
+        printf("Le due ip_mat hanno dimensione diversa, impossibile fare il blend\n");
+        exit(1);
+    }
+    else if (alpha < 0.0 || alpha > 1.0)
+    {
+        printf("Il valore alpha non rientra nel range [0,1]\n");
         exit(1);
     }
     else
@@ -624,44 +627,46 @@ ip_mat *ip_mat_blend(ip_mat *a, ip_mat *b, float alpha)
                     float filottete = (1 - alpha) * get_val(b, i, j, z);
                     set_val(blend, i, j, z, ercole + filottete);
                 }
-        clamp(blend, 0, 255);
         return blend;
     }
 }
 
-ip_mat *ip_mat_to_gray_scale(ip_mat *in){
+ip_mat *ip_mat_to_gray_scale(ip_mat *in)
+{
     ip_mat *result = ip_mat_create(in->h, in->w, in->k, 0);
     int i, j, z;
-    
-    for (i=0;i<in->h;i++){
-       for(j=0;j<in->w;j++){
-             result->data[i][j][0]= (get_val(in,i,j,0)+get_val(in,i,j,1)+get_val(in,i,j,2))/3;
-             result->data[i][j][1]= (get_val(in,i,j,0)+get_val(in,i,j,1)+get_val(in,i,j,2))/3;
-             result->data[i][j][2]= (get_val(in,i,j,0)+get_val(in,i,j,1)+get_val(in,i,j,2))/3;      
-       }
+
+    for (i = 0; i < in->h; i++)
+    {
+        for (j = 0; j < in->w; j++)
+        {
+            result->data[i][j][0] = (get_val(in, i, j, 0) + get_val(in, i, j, 1) + get_val(in, i, j, 2)) / 3;
+            result->data[i][j][1] = (get_val(in, i, j, 0) + get_val(in, i, j, 1) + get_val(in, i, j, 2)) / 3;
+            result->data[i][j][2] = (get_val(in, i, j, 0) + get_val(in, i, j, 1) + get_val(in, i, j, 2)) / 3;
+        }
     }
-    clamp(result, 0, 255);
+
     return result;
 }
-
+/* ip_mat_copy da capire se va tenuta o meno */
 ip_mat *ip_mat_brighten(ip_mat *a, float bright)
 {
-    ip_mat *copy = ip_mat_copy(a);
+    /* ip_mat *copy = ip_mat_copy(a); */
+    ip_mat *result = ip_mat_add_scalar(a, bright);
 
-    ip_mat *result = ip_mat_add_scalar(copy, bright);
-    clamp(result, 0.0, 255.0);
     return result;
 }
 
+/* ci verrà fornito una nuova funzione get_normal 
+ * che genererà numeri casuali gaussiani
+ */
 ip_mat *ip_mat_corrupt(ip_mat *a, float amount)
 {
     float media;
-    ip_mat *copy = ip_mat_copy(a);
-
+    /* ip_mat *copy = ip_mat_copy(a); */
     ip_mat *random = ip_mat_create(a->h, a->w, a->k, 0);
     ip_mat_init_random(random, media, amount);
-    ip_mat *result = ip_mat_sum(copy, random);
-    clamp(result, 0, 255);
+    ip_mat *result = ip_mat_sum(a, random);
 
     return result;
 }
@@ -671,18 +676,51 @@ ip_mat *ip_mat_corrupt(ip_mat *a, float amount)
 /* Effettua la convoluzione di un ip_mat "a" con un ip_mat "f".
  * La funzione restituisce un ip_mat delle stesse dimensioni di "a".
  * */
-ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f);
+ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f)
+{
+    unsigned int i, j, k;
 
-/* Aggiunge un padding all'immagine. Il padding verticale è pad_h mentre quello
- * orizzontale è pad_w.
- * L'output sarà un'immagine di dimensioni:
- *      out.h = a.h + 2*pad_h;
- *      out.w = a.w + 2*pad_w;
- *      out.k = a.k
- * con valori nulli sui bordi corrispondenti al padding e l'immagine "a" riportata
- * nel centro
- * */
-ip_mat *ip_mat_padding(ip_mat *a, int pad_h, int pad_w);
+    ip_mat *result = ip_mat_create(f->h, f->w, f->k, 0.0);
+
+    /* row_start = a->h row_end = f->h 
+     * col_start col_end
+     *  */
+
+    /* row_start = 0+1 row_end = f->h +1        row-end = a->h
+     * col_start col_end
+     *  */
+    unsigned int pad_h = ((f->h) - 1) / 2;
+    unsigned int pad_w = ((f->w) - 1) / 2;
+
+    ip_mat *padding = ip_mat_padding(result, pad_h, pad_w);
+
+    ip_mat_free(result);
+
+    return padding;
+}
+
+ip_mat *ip_mat_padding(ip_mat *a, int pad_h, int pad_w)
+{
+    unsigned int i, j, z;
+
+    unsigned h = a->h + 2 * pad_h;
+    unsigned w = a->w + 2 * pad_w;
+    ip_mat *result = ip_mat_create(h, w, a->k, 0.0);
+
+    for (i = 0; i < a->h; i++)
+    {
+        for (j = 0; j < a->w; j++)
+        {
+            for (z = 0; z < a->k; z++)
+            {
+                float val = get_val(a, i, j, z);
+                set_val(result, i + pad_h, j + pad_w, z, val);
+            }
+        }
+    }
+
+    return result;
+}
 
 /* Crea un filtro di sharpening */
 ip_mat *create_sharpen_filter();
@@ -709,4 +747,41 @@ ip_mat *create_gaussian_filter(int w, int h, int k, float sigma);
  * Successivamente moltiplichiamo per new_max gli elementi della matrice in modo da ottenere un range
  * di valori in [0,new_max].
  * */
-void rescale(ip_mat *t, float new_max);
+void rescale(ip_mat *t, float new_max)
+{
+    unsigned int i, j, z;
+
+    compute_stats(t);
+
+    for (z = 0; z < t->k; z++)
+    {
+        float min = t->stat->min;
+        float max = t->stat->max;
+
+        if (max == min)
+        {
+            printf("Non facciamo divisioni per 0 qui\n");
+            exit(1);
+        }
+
+        for (i = 0; i < t->h; i++)
+        {
+            for (j = 0; j < t->w; j++)
+            {
+
+                float cur_val = get_val(t, i, j, z);
+
+                if (cur_val < 0.0)
+                {
+                    set_val(t, i, j, z, 0.0);
+                }
+                else
+                {
+                    float new_val = ((cur_val - min) / (max - min)) * new_max;
+                    set_val(t, i, j, z, new_val);
+                }
+            }
+        }
+    }
+    compute_stats(t);
+}
