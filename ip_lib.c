@@ -118,7 +118,7 @@ float get_normal_random()
 
 ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
 {
-    int i, j, z, p;
+    unsigned int i, j, z, p;
 
     ip_mat *nuova = (ip_mat *)malloc(sizeof(ip_mat));
 
@@ -140,7 +140,7 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
         exit(1);
     }
 
-    for (int i = 0; i < h; i++)
+    for (unsigned int i = 0; i < h; i++)
     {
         data[i] = (float **)malloc(w * sizeof(float *));
         if (data[i] == NULL)
@@ -149,7 +149,7 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
             exit(1);
         }
 
-        for (int j = 0; j < w; j++)
+        for (unsigned int j = 0; j < w; j++)
         {
             data[i][j] = (float *)malloc(k * sizeof(float));
             if (data[i][j] == NULL)
@@ -161,9 +161,9 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
     }
 
     /* assign values to allocated memory */
-    for (int i = 0; i < h; i++)
-        for (int j = 0; j < w; j++)
-            for (int z = 0; z < k; z++)
+    for (i = 0; i < h; i++)
+        for (j = 0; j < w; j++)
+            for (z = 0; z < k; z++)
                 data[i][j][z] = v;
 
     nuova->data = data;
@@ -174,7 +174,7 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
 /* Libera la memoria (data, stat e la struttura) */
 void ip_mat_free(ip_mat *a)
 {
-    int i, j, z;
+    unsigned int i, j, z;
 
     free(a->stat);
     printf("struttura statistiche liberata\n");
@@ -192,9 +192,9 @@ void ip_mat_free(ip_mat *a)
     printf("puntatore array liberato\n");
 }
 
-float compute_min_data(ip_mat *t, int h, int w, int k)
+float compute_min_data(ip_mat *t, unsigned int h, unsigned int w, unsigned int k)
 {
-    int i, j;
+    unsigned int i, j;
 
     float min = get_val(t, 0, 0, k);
     for (i = 0; i < h; i++)
@@ -211,9 +211,9 @@ float compute_min_data(ip_mat *t, int h, int w, int k)
     return min;
 }
 
-float compute_max_data(ip_mat *t, int h, int w, int k)
+float compute_max_data(ip_mat *t, unsigned int h, unsigned int w, unsigned int k)
 {
-    int i, j;
+    unsigned int i, j;
 
     float max = get_val(t, 0, 0, k);
     for (i = 0; i < h; i++)
@@ -230,9 +230,9 @@ float compute_max_data(ip_mat *t, int h, int w, int k)
     return max;
 }
 
-float compute_mean_data(ip_mat *t, int h, int w, int k)
+float compute_mean_data(ip_mat *t, unsigned int h, unsigned int w, unsigned int k)
 {
-    int i, j;
+    unsigned int i, j;
 
     float acc = 0;
     int counter = 0;
@@ -250,7 +250,7 @@ float compute_mean_data(ip_mat *t, int h, int w, int k)
 
 void compute_stats(ip_mat *t)
 {
-    int i;
+    unsigned int i;
 
     for (i = 0; i < t->k; i++)
     {
@@ -263,7 +263,7 @@ void compute_stats(ip_mat *t)
 
 ip_mat *ip_mat_sum(ip_mat *a, ip_mat *b)
 {
-    int i, j, z;
+    unsigned int i, j, z;
     if (a->h != b->h || a->w != b->w || a->k != b->k)
     {
         printf("Matrici diverse\n");
@@ -292,7 +292,7 @@ ip_mat *ip_mat_sum(ip_mat *a, ip_mat *b)
 
 ip_mat *ip_mat_sub(ip_mat *a, ip_mat *b)
 {
-    int i, j, z;
+    unsigned int i, j, z;
     if (a->h != b->h || a->w != b->w || a->k != b->k)
     {
         printf("Matrici diverse\n");
@@ -321,7 +321,7 @@ ip_mat *ip_mat_sub(ip_mat *a, ip_mat *b)
 
 ip_mat *ip_mat_subset(ip_mat *t, unsigned int row_start, unsigned int row_end, unsigned int col_start, unsigned int col_end)
 {
-    int i, j, z;
+    unsigned int i, j, z;
 
     if (row_start >= 0 && row_start <= row_end && row_end <= t->h && col_start >= 0 && col_start <= col_end && col_end < t->w)
     {
@@ -349,7 +349,7 @@ ip_mat *ip_mat_subset(ip_mat *t, unsigned int row_start, unsigned int row_end, u
 ip_mat *ip_mat_concat(ip_mat *a, ip_mat *b, int dimensione)
 {
 
-    int i, j, z;
+    unsigned int i, j, z;
     ip_mat *concatenata;
 
     if (dimensione == 0)
@@ -457,7 +457,7 @@ ip_mat *ip_mat_copy(ip_mat *in)
 
     /*  variabili di scorrimento per i cicli */
 
-    int i, j, z;
+    unsigned int i, j, z;
 
     /* creo una nuova matrice di dimensioni uguali a quella data e la inizializzo a 0 */
 
@@ -483,7 +483,7 @@ ip_mat *ip_mat_mean(ip_mat *a, ip_mat *b)
 
     /* variabili di scorrimento */
 
-    int i, j, z;
+    unsigned int i, j, z;
 
     /* verifico che le matrici date siano della stessa dimensione, altrimenti ritorno un printf di errore  */
 
@@ -518,11 +518,11 @@ ip_mat *ip_mat_mean(ip_mat *a, ip_mat *b)
 
 ip_mat *ip_mat_mul_scalar(ip_mat *a, float c)
 {
-    int i, j, z;
+    unsigned int i, j, z;
     float supp;
-    int h = a->h;
-    int w = a->w;
-    int k = a->k;
+    unsigned int h = a->h;
+    unsigned int w = a->w;
+    unsigned int k = a->k;
     ip_mat *nuova_ms = ip_mat_create(h, w, k, 9.9);
     for (i = 0; i < h; i++)
     {
@@ -541,11 +541,11 @@ ip_mat *ip_mat_mul_scalar(ip_mat *a, float c)
 
 ip_mat *ip_mat_add_scalar(ip_mat *a, float c)
 {
-    int i, j, z;
+    unsigned int i, j, z;
     float supp;
-    int h = a->h;
-    int w = a->w;
-    int k = a->k;
+    unsigned int h = a->h;
+    unsigned int w = a->w;
+    unsigned int k = a->k;
     ip_mat *nuova_as = ip_mat_create(h, w, k, 9.9);
     for (i = 0; i < h; i++)
     {
@@ -564,11 +564,11 @@ ip_mat *ip_mat_add_scalar(ip_mat *a, float c)
 
 void ip_mat_init_random(ip_mat *t, float mean, float var)
 {
-    int i, j, k;
+    unsigned int i, j, k, z;
 
-    for (int i = 0; i < t->h; i++)
-        for (int j = 0; j < t->w; j++)
-            for (int z = 0; z < t->k; z++)
+    for (i = 0; i < t->h; i++)
+        for (j = 0; j < t->w; j++)
+            for (z = 0; z < t->k; z++)
             {
 
                 float rand = get_normal_random();
@@ -579,13 +579,13 @@ void ip_mat_init_random(ip_mat *t, float mean, float var)
 
 void clamp(ip_mat *t, float low, float high)
 {
-    int i, j, k;
+    unsigned int i, j, k, z;
 
-    for (int i = 0; i < t->h; i++)
+    for (i = 0; i < t->h; i++)
     {
-        for (int j = 0; j < t->w; j++)
+        for (j = 0; j < t->w; j++)
         {
-            for (int z = 0; z < t->k; z++)
+            for (z = 0; z < t->k; z++)
             {
                 if (t->data[i][j][z] > high)
                 {
@@ -614,13 +614,13 @@ ip_mat *ip_mat_blend(ip_mat *a, ip_mat *b, float alpha)
     }
     else
     {
-        int i, j, z;
+        unsigned int i, j, z;
 
         ip_mat *blend = ip_mat_create(a->h, a->w, a->k, 0);
 
-        for (int i = 0; i < a->h; i++)
-            for (int j = 0; j < a->w; j++)
-                for (int z = 0; z < a->k; z++)
+        for (i = 0; i < a->h; i++)
+            for (j = 0; j < a->w; j++)
+                for (z = 0; z < a->k; z++)
                 {
                     /*bait*/
                     float ercole = alpha * get_val(a, i, j, z);
@@ -634,7 +634,7 @@ ip_mat *ip_mat_blend(ip_mat *a, ip_mat *b, float alpha)
 ip_mat *ip_mat_to_gray_scale(ip_mat *in)
 {
     ip_mat *result = ip_mat_create(in->h, in->w, in->k, 0);
-    int i, j, z;
+    unsigned int i, j, z;
 
     for (i = 0; i < in->h; i++)
     {
@@ -699,6 +699,7 @@ ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f)
     return padding;
 }
 
+
 ip_mat *ip_mat_padding(ip_mat *a, int pad_h, int pad_w)
 {
     unsigned int i, j, z;
@@ -718,7 +719,6 @@ ip_mat *ip_mat_padding(ip_mat *a, int pad_h, int pad_w)
             }
         }
     }
-
     return result;
 }
 
@@ -784,4 +784,13 @@ void rescale(ip_mat *t, float new_max)
         }
     }
     compute_stats(t);
+}
+
+/*lohackers*/
+float get_normal_random_with_mean_var(float mean, float var)
+{
+    float sigma;
+    assert(var >= 0);
+    sigma = sqrt(var);
+    return get_normal_random() * sigma + mean;
 }
