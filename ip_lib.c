@@ -660,29 +660,37 @@ ip_mat *ip_mat_brighten(ip_mat *a, float bright)
     return result;
 }
 
+
 /* ci verrà fornito una nuova funzione get_normal 
  * che genererà numeri casuali gaussiani
  */
 ip_mat *ip_mat_corrupt(ip_mat *a, float amount)
 {
     unsigned int i, j, z;
+    float std = amount/2.0;
+    float a_val,rng,corrupted_val,noise;
+
+    ip_mat *corrupted = ip_mat_create(a->h,a->w,a->k, 0.0);
     /* ip_mat *copy = ip_mat_copy(a); */
     /*     ip_mat *random = ip_mat_create(a->h, a->w, a->k, 0);
     ip_mat_init_random(random, 0, 2 * amount); */
-    for (z = 0; z < a->k; z++)
+    for (i = 0; i < a->h; i++)
     {
-
-        for (i = 0; i < a->h; i++)
+        for (j = 0; j < a->w; j++)
         {
-            for (j = 0; j < a->w; j++)
+            for (z = 0; z < a->k; z++)
             {
-                float cur_val = get_val(a, i, j, z);
-                float new_val = cur_val + get_normal_random(0, 2 * amount);
-                set_val(a, i, j, z, new_val);
+                a_val = get_val (a,i,j,z);
+               
+                rng=get_normal_random(0,std);
+                corrupted_val= a_val + (rng);
+                printf ("%f\n",corrupted_val);
+                set_val (corrupted,i,j,z,corrupted_val);
             }
         }
     }
-    return a;
+    clamp(corrupted, 0,255);
+    return corrupted;
 }
 
 /*---------------------------------------PARTE 3 -----------------------------------------*/

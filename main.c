@@ -4,6 +4,7 @@
 
 int main()
 {
+    /*
     int i;
     ip_mat *sum;
     ip_mat *sub;
@@ -16,28 +17,29 @@ int main()
     ip_mat_init_random(nuova, 20.0, 3.0);
     ip_mat_show(nuova); */
 
-    /* bitmap->ip_mat->operazione->bitmap */
-
-    /*     Bitmap *c = NULL;
+    /*bitmap->ip_mat->operazione->bitmap*/
+    /*
+    Bitmap *c = NULL;
     Bitmap *b = NULL;
 
     ip_mat *input_img = NULL;
     ip_mat *input_img2 = NULL;
-
+    */
+    /*
     b = bm_load("flower2.bmp");
     c = bm_load("mongolfiere.bmp");
     input_img = bitmap_to_ip_mat(b);
-    input_img2 = bitmap_to_ip_mat(c); */
-
+    input_img2 = bitmap_to_ip_mat(c); 
+     */
     /*     ip_mat *blend = ip_mat_blend(input_img, input_img, 0);
     ip_mat_show_stats(blend);
     Bitmap *bmblend = ip_mat_to_bitmap(blend);
     bm_save(bmblend, "blended.bmp"); */
-    /* 
-    ip_mat *corrupt = ip_mat_corrupt(input_img, 255);
+    /*
+    ip_mat *corrupt = ip_mat_corrupt(input_img, 50);
     clamp(corrupt, 0, 255);
     Bitmap *bmcorrupt = ip_mat_to_bitmap(corrupt);
-    bm_save(bmcorrupt, "flower_corrupted.bmp"); */
+    bm_save(bmcorrupt, "flower_corrupted.bmp");*/
     /*     ip_mat *gray = ip_mat_to_gray_scale(input_img);
     ip_mat_show_stats(gray);
     rescale(gray, 255);
@@ -64,7 +66,7 @@ int main()
     ip_mat_free(corrupt);
     ip_mat_free(input_img);
     ip_mat_free(input_img2); */
-
+    /*
     ip_mat *convolata = ip_mat_create(5, 5, 3, 22);
     printf("-----------CONVOLATA---------------\n");
     ip_mat_show(convolata);
@@ -122,6 +124,34 @@ int main()
 
     compute_stats(sub);
     ip_mat_show_stats(sub); */
+
+
+    /* corrupt test */
+ 
+    Bitmap *c = NULL; 
+    Bitmap *b = NULL; 
+ 
+    ip_mat *input_img = NULL; 
+    ip_mat *input_img2 = NULL; 
+ 
+    b = bm_load("flower2.bmp"); 
+    c = bm_load("mongolfiere.bmp"); 
+    input_img = bitmap_to_ip_mat(b); 
+    input_img2 = bitmap_to_ip_mat(c); 
+
+ 
+    ip_mat *corrupt = ip_mat_corrupt(input_img, 50);  
+    Bitmap *bmcorrupt = ip_mat_to_bitmap(corrupt); 
+    bm_save(bmcorrupt, "corrupt.bmp"); 
+ 
+ 
+     
+    bm_free(b); 
+    bm_free(c); 
+    bm_free(bmcorrupt);
+    ip_mat_free(input_img); 
+    ip_mat_free(input_img2);
+    ip_mat_free(corrupt); 
 
     return 0;
 }
