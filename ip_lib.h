@@ -125,7 +125,11 @@ ip_mat *ip_mat_brighten(ip_mat *a, float bright);
 /* Operazione di corruzione con rumore gaussiano:
  * Aggiunge del rumore gaussiano all'immagine, il rumore viene enfatizzato
  * per mezzo della variabile amount.
+ *
  * out = a + gauss_noise*amount
+ *
+ * I parametri della funzione non subiscono modiche, il risultato viene salvato e restituito in output
+ * all'interno di una nuova ip_mat.
  * */
 ip_mat *ip_mat_corrupt(ip_mat *a, float amount);
 
@@ -133,7 +137,10 @@ ip_mat *ip_mat_corrupt(ip_mat *a, float amount);
 
 /* Effettua la convoluzione di un ip_mat "a" con un ip_mat "f".
  * La funzione restituisce un ip_mat delle stesse dimensioni di "a".
- * */
+ *
+ * I parametri della funzione non subiscono modiche, il risultato viene salvato e restituito in output
+ * all'interno di una nuova ip_mat.
+ */
 ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f);
 
 /* Aggiunge un padding all'immagine. Il padding verticale è pad_h mentre quello
@@ -143,9 +150,12 @@ ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f);
  *      out.w = a.w + 2*pad_w;
  *      out.k = a.k
  * con valori nulli sui bordi corrispondenti al padding e l'immagine "a" riportata
- * nel centro
- * */
-ip_mat *ip_mat_padding(ip_mat *a, int pad_h, int pad_w);
+ * nel centro.
+ *
+ * I parametri della funzione non subiscono modiche, il risultato viene salvato e restituito in output
+ * all'interno di una nuova ip_mat.
+ */
+ip_mat *ip_mat_padding(ip_mat *a, unsigned int pad_h, unsigned int pad_w);
 
 /* Crea un filtro di sharpening */
 ip_mat *create_sharpen_filter();
@@ -157,10 +167,10 @@ ip_mat *create_edge_filter();
 ip_mat *create_emboss_filter();
 
 /* Crea un filtro medio per la rimozione del rumore */
-ip_mat *create_average_filter(int w, int h, int k);
+ip_mat *create_average_filter(unsigned int w, unsigned int h, unsigned int k);
 
 /* Crea un filtro gaussiano per la rimozione del rumore */
-ip_mat *create_gaussian_filter(int w, int h, int k, float sigma);
+ip_mat *create_gaussian_filter(unsigned int w, unsigned int h, unsigned int k, float sigma);
 
 /* Effettua una riscalatura dei dati tale che i valori siano in [0,new_max].
  * Utilizzate il metodo compute_stat per ricavarvi il min, max per ogni canale.
@@ -178,10 +188,11 @@ void rescale(ip_mat *t, float new_max);
 void clamp(ip_mat *t, float low, float high);
 
 /**** METODI GIA' IMPLEMENTATI ****/
-/* Genera dei numeri casuali con distribuzione Normale (versione base)
+/* Genera dei numeri casuali con distribuzione Normale
  * https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
+ * caratterizzata da media = mu e deviazione  = std
  * */
-float get_normal_random();
+float get_normal_random(float media, float std);
 
 /* Converte una Bitmap in una ip_mat*/
 ip_mat *bitmap_to_ip_mat(Bitmap *img);

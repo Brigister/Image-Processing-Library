@@ -109,11 +109,14 @@ void set_val(ip_mat *a, unsigned int i, unsigned int j, unsigned int k, float v)
     }
 }
 
-float get_normal_random()
+float get_normal_random(float media, float std)
 {
+
     float y1 = ((float)(rand()) + 1.) / ((float)(RAND_MAX) + 1.);
     float y2 = ((float)(rand()) + 1.) / ((float)(RAND_MAX) + 1.);
-    return cos(2 * PI * y2) * sqrt(-2. * log(y1));
+    float num = cos(2 * PI * y2) * sqrt(-2. * log(y1));
+
+    return media + num * std;
 }
 
 ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
@@ -571,8 +574,8 @@ void ip_mat_init_random(ip_mat *t, float mean, float var)
             for (z = 0; z < t->k; z++)
             {
 
-                float rand = get_normal_random();
-                rand = rand * var + mean;
+                float rand = get_normal_random(mean, var);
+                /* rand = rand * var + mean; */
                 t->data[i][j][z] = rand;
             }
 }
@@ -699,8 +702,7 @@ ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f)
     return padding;
 }
 
-
-ip_mat *ip_mat_padding(ip_mat *a, int pad_h, int pad_w)
+ip_mat *ip_mat_padding(ip_mat *a, unsigned int pad_h, unsigned int pad_w)
 {
     unsigned int i, j, z;
 
@@ -732,10 +734,10 @@ ip_mat *create_edge_filter();
 ip_mat *create_emboss_filter();
 
 /* Crea un filtro medio per la rimozione del rumore */
-ip_mat *create_average_filter(int w, int h, int k);
+ip_mat *create_average_filter(unsigned int w, unsigned int h, unsigned int k);
 
 /* Crea un filtro gaussiano per la rimozione del rumore */
-ip_mat *create_gaussian_filter(int w, int h, int k, float sigma);
+ip_mat *create_gaussian_filter(unsigned int w, unsigned int h, unsigned int k, float sigma);
 
 /* Effettua una riscalatura dei dati tale che i valori siano in [0,new_max].
  * Utilizzate il metodo compute_stat per ricavarvi il min, max per ogni canale.
@@ -787,10 +789,10 @@ void rescale(ip_mat *t, float new_max)
 }
 
 /*lohackers*/
-float get_normal_random_with_mean_var(float mean, float var)
+/* float get_normal_random_with_mean_var(float mean, float var)
 {
     float sigma;
     assert(var >= 0);
     sigma = sqrt(var);
     return get_normal_random() * sigma + mean;
-}
+} */
