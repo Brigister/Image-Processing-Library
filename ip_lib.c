@@ -665,23 +665,31 @@ ip_mat *ip_mat_brighten(ip_mat *a, float bright)
  */
 ip_mat *ip_mat_corrupt(ip_mat *a, float amount)
 {
-    float media;
+    unsigned int i, j, z;
     /* ip_mat *copy = ip_mat_copy(a); */
-    ip_mat *random = ip_mat_create(a->h, a->w, a->k, 0);
-    ip_mat_init_random(random, media, amount);
-    ip_mat *result = ip_mat_sum(a, random);
+    /*     ip_mat *random = ip_mat_create(a->h, a->w, a->k, 0);
+    ip_mat_init_random(random, 0, 2 * amount); */
+    for (z = 0; z < a->k; z++)
+    {
 
-    return result;
+        for (i = 0; i < a->h; i++)
+        {
+            for (j = 0; j < a->w; j++)
+            {
+                float cur_val = get_val(a, i, j, z);
+                float new_val = cur_val + get_normal_random(0, 2 * amount);
+                set_val(a, i, j, z, new_val);
+            }
+        }
+    }
+    return a;
 }
 
 /*---------------------------------------PARTE 3 -----------------------------------------*/
 
-/* Effettua la convoluzione di un ip_mat "a" con un ip_mat "f".
- * La funzione restituisce un ip_mat delle stesse dimensioni di "a".
- * */
 ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f)
 {
-    unsigned int i, j, k;
+    unsigned int i, j, z;
 
     ip_mat *result = ip_mat_create(f->h, f->w, f->k, 0.0);
 
@@ -692,6 +700,33 @@ ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f)
     /* row_start = 0+1 row_end = f->h +1        row-end = a->h
      * col_start col_end
      *  */
+    /* 
+        sub_set(0 _ 2, 0 _ 2) 
+     */
+    for (z = 0; z < a->k; z++)
+    {
+        for (i = 0; i <= (a->h - f->h); i++)
+        {
+            for (j = 0; j <= (a->w - f->w); j++)
+            {
+                unsigned int r, c;
+                float final_val = 0;
+                ip_mat *sub = ip_mat_subset(a, i, f->h, j, f->w);
+                for (r = 0; r < sub->h; r++)
+                {
+                    for (c = 0; c < sub->w; c++)
+                    {
+                        float cur_val = get_val(sub, r, c, z);
+                        float new_val = cur_val * get_val(f, r, c, z);
+                        final_val += new_val;
+                    }
+                }
+                set_val(result, i, j, z, final_val);
+                ip_mat_free(sub);
+            }
+        }
+    }
+
     unsigned int pad_h = ((f->h) - 1) / 2;
     unsigned int pad_w = ((f->w) - 1) / 2;
 
