@@ -778,6 +778,11 @@ ip_mat *create_emboss_filter();
 /* Crea un filtro medio per la rimozione del rumore */
 ip_mat *create_average_filter(unsigned int w, unsigned int h, unsigned int k)
 {
+    if (h < 1 || w < 1 || k < 3)
+    {
+        printf("input del filtro errati");
+        exit(1);
+    }
     /*il filtro puo essere negativo?*/
     float val = 1;
     float jeez = h * w;
