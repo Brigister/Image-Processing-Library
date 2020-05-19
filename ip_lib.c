@@ -767,13 +767,92 @@ ip_mat *ip_mat_padding(ip_mat *a, unsigned int pad_h, unsigned int pad_w)
 }
 
 /* Crea un filtro di sharpening */
-ip_mat *create_sharpen_filter();
+ip_mat* create_sharpen_filter() {
+    // creo una nuova ip_mat 333 e la inizializzo a 0 //
+
+    ip_mat* filtro = ip_mat_create(3, 3, 3, 00.0);
+    int k=0;
+
+    for (k = 0; k < 3; k++) {
+
+        //setto valori prima riga della matrice filtro//
+
+        set_val(filtro, 0, 0, k, 0);
+        set_val(filtro, 0, 1, k, -1);
+        set_val(filtro, 0, 2, k, 0);
+
+        // setto valori seconda riga della matrice filtro//
+
+        set_val(filtro, 1, 0, k, -1);
+        set_val(filtro, 1, 1, k, 5);
+        set_val(filtro, 1, 2, k, -1);
+
+        // setto valori della terza riga della matrice filtro//
+
+        set_val(filtro, 2, 0, k, 0);
+        set_val(filtro, 2, 1, k, -1);
+        set_val(filtro, 2, 2, k, 0);
+
+        // ritorno la matrice filtro//
+    }
+    return filtro;
+}
 
 /* Crea un filtro per rilevare i bordi */
-ip_mat *create_edge_filter();
+ip_mat* create_edge_filter() {
+
+    // creo una nuova ip_mat 333 e la inizializzo a 0 //
+
+    ip_mat* filtro = ip_mat_create(3, 3, 3, 00.0);
+    int r = 0, c = 0, k = 0;
+    for (k = 0; k < 3; k++) {
+        for (c = 0; c < 3; c++) {
+            for (r = 0; r < 3; r++) {
+                set_val(filtro, r, c, k, -1);
+            }
+        }
+    }
+    for (k = 0; k < 3; k++) {
+        set_val(filtro, 1, 1, k, 8);
+    }
+    return filtro;
+}
 
 /* Crea un filtro per aggiungere profondità */
-ip_mat *create_emboss_filter();
+ip_mat* create_emboss_filter() {
+
+
+    // creo una nuova ip_mat 333 e la inizializzo a 0 //
+
+    ip_mat* filtro = ip_mat_create(3, 3, 3, 00.0);
+    int k = 0;
+
+    for (k = 0; k < 3; k++) {
+
+        //setto valori prima riga della matrice filtro// 
+
+        set_val(filtro, 0, 0, k, -2);
+        set_val(filtro, 0, 1, k, -1);
+        set_val(filtro, 0, 2, k, 0);
+
+
+        // setto valori seconda riga della matrice filtro//
+
+        set_val(filtro, 1, 0, k, -1);
+        set_val(filtro, 1, 1, k, 1);
+        set_val(filtro, 1, 2, k, 1);
+
+        // setto valori della terza riga della matrice filtro//
+
+        set_val(filtro, 2, 0, k, 0);
+        set_val(filtro, 2, 1, k, 1);
+        set_val(filtro, 2, 2, k, 2);
+
+        // ritorno la matrice filtro//
+    }
+
+    return filtro;
+}
 
 /* Crea un filtro medio per la rimozione del rumore */
 ip_mat *create_average_filter(unsigned int w, unsigned int h, unsigned int k)
