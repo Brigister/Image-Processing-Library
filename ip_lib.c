@@ -180,7 +180,7 @@ void ip_mat_free(ip_mat *a)
     unsigned int i, j, z;
 
     free(a->stat);
-    printf("struttura statistiche liberata\n");
+    /* printf("struttura statistiche liberata\n"); */
 
     for (i = 0; i < a->h; i++)
     {
@@ -190,9 +190,9 @@ void ip_mat_free(ip_mat *a)
         }
         free((a->data[i]));
     }
-    printf("array liberato\n");
+    /* printf("array liberato\n"); */
     free(a->data);
-    printf("puntatore array liberato\n");
+    /* printf("puntatore array liberato\n"); */
 }
 
 float compute_min_data(ip_mat *t, unsigned int h, unsigned int w, unsigned int k)
@@ -326,17 +326,18 @@ ip_mat *ip_mat_subset(ip_mat *t, unsigned int row_start, unsigned int row_end, u
 {
     unsigned int i, j, z;
 
-    if (row_start >= 0 && row_start <= row_end && row_end <= t->h && col_start >= 0 && col_start <= col_end && col_end < t->w)
+    if (row_start >= 0 && row_start <= row_end && row_end <= t->h && col_start >= 0 && col_start <= col_end && col_end <= t->w)
     {
-        ip_mat *sub_mat = ip_mat_create(row_end, col_end, t->k, 0);
-        /*https://moodle.unive.it/mod/forum/discuss.php?d=63261 */
+        unsigned int valorant_alpha = row_end - row_start;
+        unsigned int valorant_beta = col_end - col_start;
+        ip_mat *sub_mat = ip_mat_create(valorant_alpha, valorant_beta, t->k, 0);
         for (z = 0; z < sub_mat->k; z++)
         {
             for (i = 0; i < sub_mat->h; i++)
             {
                 for (j = 0; j < sub_mat->w; j++)
                 {
-                    set_val(sub_mat, i, j, z, get_val(t, i, j, z));
+                    set_val(sub_mat, i, j, z, get_val(t, i + row_start, j + col_start, z));
                 }
             }
         }
@@ -698,7 +699,15 @@ ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f)
 {
     unsigned int i, j, z;
 
-    ip_mat *result = ip_mat_create(f->h, f->w, f->k, 0.0);
+    unsigned int pad_h = ((f->h) - 1) / 2;
+    unsigned int pad_w = ((f->w) - 1) / 2;
+
+    ip_mat *padding = ip_mat_padding(a, pad_h, pad_w);
+    printf("paddata\n");
+    ip_mat_show(padding);
+
+    ip_mat *result = ip_mat_create(a->h, a->w, a->k, 0.0);
+    /* ip_mat *result = ip_mat_create(f->h, f->w, f->k, 0.0); */
 
     /* row_start = a->h row_end = f->h 
      * col_start col_end
@@ -709,22 +718,38 @@ ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f)
      *  */
     /* 
         sub_set(0 _ 2, 0 _ 2) 
+
+        se faccio a resulti l padding sulla base del filtro lo paddo di 1 per lato
+        che non è gucci
+        sono riandato via
+
+        283 -> 285 
+        362 -> 364 
+
      */
-    for (z = 0; z < a->k; z++)
+    for (z = 0; z < padding->k; z++)
     {
-        for (i = 0; i <= (a->h - f->h); i++)
+        for (i = 0; i <= (padding->h - f->h); i++)
         {
-            for (j = 0; j <= (a->w - f->w); j++)
+            for (j = 0; j <= (padding->w - f->w); j++)
             {
                 unsigned int r, c;
                 float final_val = 0;
-                ip_mat *sub = ip_mat_subset(a, i, f->h, j, f->w);
+
+                ip_mat *sub = ip_mat_subset(padding, i, f->h + i, j, f->w + j);
+                /* printf("SUB  i = %d, j = %d\n", i, j); */
+                /* ip_mat_show(sub); */
+
                 for (r = 0; r < sub->h; r++)
                 {
                     for (c = 0; c < sub->w; c++)
                     {
+                        /* printf("r=%d,c=%d\n", r, c); */
                         float cur_val = get_val(sub, r, c, z);
+                        /* printf("curval = %f\n", cur_val); */
+
                         float new_val = cur_val * get_val(f, r, c, z);
+                        /* printf("newval = %f\n", new_val); */
                         final_val += new_val;
                     }
                 }
@@ -734,14 +759,7 @@ ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f)
         }
     }
 
-    unsigned int pad_h = ((f->h) - 1) / 2;
-    unsigned int pad_w = ((f->w) - 1) / 2;
-
-    ip_mat *padding = ip_mat_padding(result, pad_h, pad_w);
-
-    ip_mat_free(result);
-
-    return padding;
+    return result;
 }
 
 ip_mat *ip_mat_padding(ip_mat *a, unsigned int pad_h, unsigned int pad_w)
@@ -767,88 +785,64 @@ ip_mat *ip_mat_padding(ip_mat *a, unsigned int pad_h, unsigned int pad_w)
 }
 
 /* Crea un filtro di sharpening */
-ip_mat* create_sharpen_filter() {
-    // creo una nuova ip_mat 333 e la inizializzo a 0 //
+ip_mat *create_sharpen_filter()
+{
+    /*  creo una nuova ip_mat 3x3x3 e la inizializzo a 0*/
+    ip_mat *filtro = ip_mat_create(3, 3, 3, 00.0);
+    int k = 0;
 
-    ip_mat* filtro = ip_mat_create(3, 3, 3, 00.0);
-    int k=0;
-
-    for (k = 0; k < 3; k++) {
-
-        //setto valori prima riga della matrice filtro//
-
-        set_val(filtro, 0, 0, k, 0);
+    for (k = 0; k < 3; k++)
+    {
+        /* setto valori prima riga della matrice filtro */
         set_val(filtro, 0, 1, k, -1);
-        set_val(filtro, 0, 2, k, 0);
 
-        // setto valori seconda riga della matrice filtro//
-
+        /* setto valori seconda riga della matrice filtro */
         set_val(filtro, 1, 0, k, -1);
         set_val(filtro, 1, 1, k, 5);
         set_val(filtro, 1, 2, k, -1);
 
-        // setto valori della terza riga della matrice filtro//
-
-        set_val(filtro, 2, 0, k, 0);
+        /* setto valori della terza riga della matrice filtro */
         set_val(filtro, 2, 1, k, -1);
-        set_val(filtro, 2, 2, k, 0);
-
-        // ritorno la matrice filtro//
     }
     return filtro;
 }
 
 /* Crea un filtro per rilevare i bordi */
-ip_mat* create_edge_filter() {
+ip_mat *create_edge_filter()
+{
 
-    // creo una nuova ip_mat 333 e la inizializzo a 0 //
+    /* creo una nuova ip_mat 3x3x3 e la inizializzo a -1 */
+    unsigned int k;
+    ip_mat *filtro = ip_mat_create(3, 3, 3, -1.0);
 
-    ip_mat* filtro = ip_mat_create(3, 3, 3, 00.0);
-    int r = 0, c = 0, k = 0;
-    for (k = 0; k < 3; k++) {
-        for (c = 0; c < 3; c++) {
-            for (r = 0; r < 3; r++) {
-                set_val(filtro, r, c, k, -1);
-            }
-        }
-    }
-    for (k = 0; k < 3; k++) {
+    /* setto il centro a 8 */
+    for (k = 0; k < 3; k++)
+    {
         set_val(filtro, 1, 1, k, 8);
     }
     return filtro;
 }
 
 /* Crea un filtro per aggiungere profondità */
-ip_mat* create_emboss_filter() {
+ip_mat *create_emboss_filter()
+{
 
+    /* creo una nuova ip_mat 3x3x3 e la inizializzo a 0  */
 
-    // creo una nuova ip_mat 333 e la inizializzo a 0 //
-
-    ip_mat* filtro = ip_mat_create(3, 3, 3, 00.0);
+    ip_mat *filtro = ip_mat_create(3, 3, 3, 1.0);
     int k = 0;
 
-    for (k = 0; k < 3; k++) {
-
-        //setto valori prima riga della matrice filtro// 
-
+    for (k = 0; k < 3; k++)
+    {
+        /*setto valori prima riga della matrice filtro*/
         set_val(filtro, 0, 0, k, -2);
         set_val(filtro, 0, 1, k, -1);
         set_val(filtro, 0, 2, k, 0);
-
-
-        // setto valori seconda riga della matrice filtro//
-
+        /*setto valori seconda riga della matrice filtro */
         set_val(filtro, 1, 0, k, -1);
-        set_val(filtro, 1, 1, k, 1);
-        set_val(filtro, 1, 2, k, 1);
-
-        // setto valori della terza riga della matrice filtro//
-
+        /*setto valori della terza riga della matrice filtro*/
         set_val(filtro, 2, 0, k, 0);
-        set_val(filtro, 2, 1, k, 1);
         set_val(filtro, 2, 2, k, 2);
-
-        // ritorno la matrice filtro//
     }
 
     return filtro;
@@ -857,17 +851,13 @@ ip_mat* create_emboss_filter() {
 /* Crea un filtro medio per la rimozione del rumore */
 ip_mat *create_average_filter(unsigned int w, unsigned int h, unsigned int k)
 {
-    if (h < 1 || w < 1 || k < 3)
-    {
-        printf("input del filtro errati");
-        exit(1);
-    }
+
     /*il filtro puo essere negativo?*/
     float val = 1;
     float jeez = h * w;
     float avg = val / jeez;
 
-    ip_mat *avg_filter = ip_mat_create(h, w, k, avg);
+    ip_mat *avg_filter = ip_mat_create(w, h, k, avg);
 
     return avg_filter;
 }
