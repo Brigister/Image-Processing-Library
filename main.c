@@ -125,33 +125,32 @@ int main()
     compute_stats(sub);
     ip_mat_show_stats(sub); */
 
-
     /* corrupt test */
- 
-    Bitmap *c = NULL; 
-    Bitmap *b = NULL; 
- 
-    ip_mat *input_img = NULL; 
-    ip_mat *input_img2 = NULL; 
- 
-    b = bm_load("flower2.bmp"); 
-    c = bm_load("mongolfiere.bmp"); 
-    input_img = bitmap_to_ip_mat(b); 
-    input_img2 = bitmap_to_ip_mat(c); 
 
- 
-    ip_mat *corrupt = ip_mat_corrupt(input_img, 50);  
-    Bitmap *bmcorrupt = ip_mat_to_bitmap(corrupt); 
-    bm_save(bmcorrupt, "corrupt.bmp"); 
- 
- 
-     
-    bm_free(b); 
-    bm_free(c); 
+    Bitmap *c = NULL;
+    Bitmap *b = NULL;
+
+    ip_mat *input_img = NULL;
+    ip_mat *input_img2 = NULL;
+
+    b = bm_load("flower2.bmp");
+    c = bm_load("mongolfiere.bmp");
+    input_img = bitmap_to_ip_mat(b);
+    input_img2 = bitmap_to_ip_mat(c);
+
+    ip_mat *corrupt = ip_mat_corrupt(input_img, 50);
+    Bitmap *bmcorrupt = ip_mat_to_bitmap(corrupt);
+    bm_save(bmcorrupt, "corrupt.bmp");
+
+    ip_mat *cane = create_average_filter(3, 3, 3);
+    ip_mat_show(cane);
+
+    bm_free(b);
+    bm_free(c);
     bm_free(bmcorrupt);
-    ip_mat_free(input_img); 
+    ip_mat_free(input_img);
     ip_mat_free(input_img2);
-    ip_mat_free(corrupt); 
+    ip_mat_free(corrupt);
 
     return 0;
 }

@@ -660,17 +660,16 @@ ip_mat *ip_mat_brighten(ip_mat *a, float bright)
     return result;
 }
 
-
 /* ci verrà fornito una nuova funzione get_normal 
  * che genererà numeri casuali gaussiani
  */
 ip_mat *ip_mat_corrupt(ip_mat *a, float amount)
 {
     unsigned int i, j, z;
-    float std = amount/2.0;
-    float a_val,rng,corrupted_val,noise;
+    float std = amount / 2.0;
+    float a_val, rng, corrupted_val, noise;
 
-    ip_mat *corrupted = ip_mat_create(a->h,a->w,a->k, 0.0);
+    ip_mat *corrupted = ip_mat_create(a->h, a->w, a->k, 0.0);
     /* ip_mat *copy = ip_mat_copy(a); */
     /*     ip_mat *random = ip_mat_create(a->h, a->w, a->k, 0);
     ip_mat_init_random(random, 0, 2 * amount); */
@@ -680,16 +679,16 @@ ip_mat *ip_mat_corrupt(ip_mat *a, float amount)
         {
             for (z = 0; z < a->k; z++)
             {
-                a_val = get_val (a,i,j,z);
-               
-                rng=get_normal_random(0,std);
-                corrupted_val= a_val + (rng);
-                printf ("%f\n",corrupted_val);
-                set_val (corrupted,i,j,z,corrupted_val);
+                a_val = get_val(a, i, j, z);
+
+                rng = get_normal_random(0, std);
+                corrupted_val = a_val + (rng);
+                /*printf("%f\n", corrupted_val);*/
+                set_val(corrupted, i, j, z, corrupted_val);
             }
         }
     }
-    clamp(corrupted, 0,255);
+    clamp(corrupted, 0, 255);
     return corrupted;
 }
 
@@ -777,7 +776,17 @@ ip_mat *create_edge_filter();
 ip_mat *create_emboss_filter();
 
 /* Crea un filtro medio per la rimozione del rumore */
-ip_mat *create_average_filter(unsigned int w, unsigned int h, unsigned int k);
+ip_mat *create_average_filter(unsigned int w, unsigned int h, unsigned int k)
+{
+    /*il filtro puo essere negativo?*/
+    float val = 1;
+    float jeez = h * w;
+    float avg = val / jeez;
+
+    ip_mat *avg_filter = ip_mat_create(h, w, k, avg);
+
+    return avg_filter;
+}
 
 /* Crea un filtro gaussiano per la rimozione del rumore */
 ip_mat *create_gaussian_filter(unsigned int w, unsigned int h, unsigned int k, float sigma);
