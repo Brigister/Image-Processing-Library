@@ -178,21 +178,22 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
 void ip_mat_free(ip_mat *a)
 {
     unsigned int i, j, z;
+ 
 
     free(a->stat);
     /* printf("struttura statistiche liberata\n"); */
 
-    for (i = 0; i < a->h; i++)
-    {
-        for (j = 0; j < a->w; j++)
-        {
-            free((a->data[i][j]));
-        }
-        free((a->data[i]));
-    }
-    /* printf("array liberato\n"); */
-    free(a->data);
-    /* printf("puntatore array liberato\n"); */
+    for (int i = 0; i < a->h; i++) 
+	{
+		for (int j = 0; j < a->w; j++)
+			free(a->data[i][j]);
+
+		free(a->data[i]);
+	}
+	free(a->data);
+    free(a);
+
+  
 }
 
 float compute_min_data(ip_mat *t, unsigned int h, unsigned int w, unsigned int k)
@@ -758,7 +759,7 @@ ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f)
             }
         }
     }
-
+    ip_mat_free(padding);
     return result;
 }
 
