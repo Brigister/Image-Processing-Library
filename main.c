@@ -1,32 +1,33 @@
 #include <stdio.h>
-#include "ip_lib.c"
+#include "ip_lib.h"
 #include "bmp.c"
 
 int main()
 {
- 
+
     /*test free*/
-    
+
     Bitmap *b = NULL;
 
     ip_mat *input_img = NULL;
- 
-    b = bm_load("flower2.bmp");
+
+    b = bm_load("fullmoon.bmp");
 
     Bitmap *c = NULL;
 
     ip_mat *input_img2 = NULL;
- 
+
     c = bm_load("mongolfiere.bmp");
 
     input_img = bitmap_to_ip_mat(b);
     input_img2 = bitmap_to_ip_mat(c);
 
-    ip_mat *blend = ip_mat_blend(input_img, input_img2, 0);
+    /*     ip_mat *blend = ip_mat_blend(input_img, input_img2, 0);
     Bitmap *bmblend = ip_mat_to_bitmap(blend);
-    bm_save(bmblend, "blended.bmp"); 
-    
-    ip_mat *corrupt = ip_mat_corrupt(input_img, 50);
+    bm_save(bmblend, "blended.bmp"); */
+
+    ip_mat *corrupt = ip_mat_brighten(input_img, 50);
+    clamp(corrupt, 0, 255);
     Bitmap *bmcorrupt = ip_mat_to_bitmap(corrupt);
     bm_save(bmcorrupt, "corrupt.bmp");
 
@@ -45,39 +46,37 @@ int main()
     ip_mat *subset = ip_mat_subset(paddata, 4, 7, 4, 7);
     ip_mat *cane = create_average_filter(3, 3, 3);
 
+    ip_mat *gaussian_filter = create_gaussian_filter(9, 9, 3, 5);
+    /*     ip_mat_show(gaussian_filter); */
+
+    ip_mat *gaussian_filtered = ip_mat_convolve(input_img2, gaussian_filter);
+    clamp(gaussian_filtered, 0, 255);
+    Bitmap *pippo = ip_mat_to_bitmap(gaussian_filtered);
+    bm_save(pippo, "gaussian_filter.bmp");
+
     ip_mat_free(gray);
     ip_mat_free(corrupt);
-    ip_mat_free(blend);
-    bm_free(bmgray); 
+    /*    ip_mat_free(blend); */
+    bm_free(bmgray);
     bm_free(bmcorrupt);
-    bm_free(bmblend);
- 
-    ip_mat_free(filtro);  
-    ip_mat_free(emboss_filter); 
-    ip_mat_free(edge_filter); 
-    ip_mat_free(sharpen_filter); 
-    
-    ip_mat_free(convolata); 
+    /* bm_free(bmblend); */
+
+    ip_mat_free(filtro);
+    ip_mat_free(emboss_filter);
+    ip_mat_free(edge_filter);
+    ip_mat_free(sharpen_filter);
+
+    ip_mat_free(convolata);
     ip_mat_free(anozze);
     ip_mat_free(paddata);
     ip_mat_free(subset);
     ip_mat_free(cane);
-    
-  
+
     ip_mat_free(input_img);
     bm_free(b);
     ip_mat_free(input_img2);
     bm_free(c);
-    
-    
 
-
-
-
-
-
-
-     
     /*
 
     ip_mat *padding = ip_mat_create(2, 3, 3, 22);

@@ -6,6 +6,8 @@
 #include "ip_lib.h"
 #include "bmp.h"
 
+#define E 2.71828182846
+
 void ip_mat_show(ip_mat *t)
 {
     unsigned int i, l, j;
@@ -178,22 +180,25 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
 void ip_mat_free(ip_mat *a)
 {
     unsigned int i, j, z;
- 
+    if (a != NULL)
+    {
+        free(a->stat);
+        /* printf("struttura statistiche liberata\n"); */
 
-    free(a->stat);
-    /* printf("struttura statistiche liberata\n"); */
+        for (int i = 0; i < a->h; i++)
+        {
+            for (int j = 0; j < a->w; j++)
+                free(a->data[i][j]);
 
-    for (int i = 0; i < a->h; i++) 
-	{
-		for (int j = 0; j < a->w; j++)
-			free(a->data[i][j]);
-
-		free(a->data[i]);
-	}
-	free(a->data);
-    free(a);
-
-  
+            free(a->data[i]);
+        }
+        free(a->data);
+        free(a);
+    }
+    else
+    {
+        printf("Il puntatore %p punta a NULL\n", &a);
+    }
 }
 
 float compute_min_data(ip_mat *t, unsigned int h, unsigned int w, unsigned int k)
@@ -864,7 +869,79 @@ ip_mat *create_average_filter(unsigned int w, unsigned int h, unsigned int k)
 }
 
 /* Crea un filtro gaussiano per la rimozione del rumore */
-ip_mat *create_gaussian_filter(unsigned int w, unsigned int h, unsigned int k, float sigma);
+float val_kernel_gaus(int x, int y, float sigma)
+{
+    float result;
+    result = (1 / ((2 * PI) * (pow(sigma, 2)))) * pow(E, -1 * (((pow(x, 2) + pow(y, 2))) / (2 * (pow(sigma, 2)))));
+
+    return result;
+}
+
+ip_mat *create_gaussian_filter(unsigned int w, unsigned int h, unsigned int k, float sigma)
+{
+
+    /*  inizializzo gli indici cx e cy della cella centrale del kernel e le variabili per memorizzare le distanze e la somma  */
+
+    int distanza_x, distanza_y;
+    /* pensare al piano cartesiano */
+    int cx = h / 2;
+    int cy = w / 2;
+    float somma = 0;
+
+    /*  creo una nuova ip map wxhxk */
+
+    ip_mat *gaussian_filter = ip_mat_create(w, h, k, 0.00);
+
+    /* per ogni valori del ciclo calcolo le nuove distanze e le passo come valori nella funzione val_kernel_gaus
+   setto per ogni valore del ciclo il valore calcolato dalla funzione val_kernel_gauss */
+
+    int i, j, z;
+    for (z = 0; z < k; z++)
+    {
+        for (i = 0; i < gaussian_filter->h; i++)
+        {
+
+            for (j = 0; j < gaussian_filter->w; j++)
+            {
+                distanza_x = j - cx;
+                distanza_y = i - cy;
+
+                float kernel_val = val_kernel_gaus(distanza_x, distanza_y, sigma);
+                /* printf("kernel_val[%d,%d] = %f\n", i, j, kernel_val); */
+                set_val(gaussian_filter, i, j, z, kernel_val);
+            }
+        }
+    }
+
+    /*   calcolo la somma dei valori del canale */
+
+    for (i = 0; i < gaussian_filter->h; i++)
+    {
+        for (j = 0; j < gaussian_filter->w; j++)
+        {
+            somma = somma + get_val(gaussian_filter, i, j, 1);
+            /*somma1 = somma1 + get_val(gaussian_filter, i, j, 1);
+            somma2 = somma2 + get_val(gaussian_filter, i, j, 2); */
+        }
+    }
+
+    /* setto i nuovi valori  dividendoli per la somma */
+    for (z = 0; z < k; z++)
+    {
+        for (i = 0; i < gaussian_filter->h; i++)
+        {
+
+            for (j = 0; j < gaussian_filter->w; j++)
+            {
+                float new_val = get_val(gaussian_filter, i, j, z) / somma;
+                set_val(gaussian_filter, i, j, z, new_val);
+            }
+        }
+    }
+
+    /* printf("la somma dei valori del filtro e' %lf\n", somma); */
+    return gaussian_filter;
+}
 
 /* Effettua una riscalatura dei dati tale che i valori siano in [0,new_max].
  * Utilizzate il metodo compute_stat per ricavarvi il min, max per ogni canale.
