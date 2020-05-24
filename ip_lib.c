@@ -123,9 +123,12 @@ float get_normal_random(float media, float std)
 
 ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
 {
-    unsigned int i, j, z, p;
+    unsigned int i, j, z;
 
-    ip_mat *nuova = (ip_mat *)malloc(sizeof(ip_mat));
+    ip_mat *nuova;
+    stats *stat;
+    float ***data;
+    nuova = (ip_mat *)malloc(sizeof(ip_mat));
 
     nuova->w = w;
     nuova->h = h;
@@ -133,11 +136,11 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
 
     /*allocamento stat*/
 
-    stats *stat = (stats *)malloc(sizeof(stats) * k);
+    stat = (stats *)malloc(sizeof(stats) * k);
     nuova->stat = stat;
 
     /*creazione*/
-    float ***data = (float ***)malloc(h * sizeof(float **));
+    data = (float ***)malloc(h * sizeof(float **));
 
     if (data == NULL)
     {
@@ -145,7 +148,7 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
         exit(1);
     }
 
-    for (unsigned int i = 0; i < h; i++)
+    for (i = 0; i < h; i++)
     {
         data[i] = (float **)malloc(w * sizeof(float *));
         if (data[i] == NULL)
@@ -154,7 +157,7 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
             exit(1);
         }
 
-        for (unsigned int j = 0; j < w; j++)
+        for (j = 0; j < w; j++)
         {
             data[i][j] = (float *)malloc(k * sizeof(float));
             if (data[i][j] == NULL)
@@ -179,15 +182,15 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
 /* Libera la memoria (data, stat e la struttura) */
 void ip_mat_free(ip_mat *a)
 {
-    unsigned int i, j, z;
+    unsigned int i, j;
     if (a != NULL)
     {
         free(a->stat);
         /* printf("struttura statistiche liberata\n"); */
 
-        for (int i = 0; i < a->h; i++)
+        for (i = 0; i < a->h; i++)
         {
-            for (int j = 0; j < a->w; j++)
+            for (j = 0; j < a->w; j++)
                 free(a->data[i][j]);
 
             free(a->data[i]);
@@ -332,7 +335,7 @@ ip_mat *ip_mat_subset(ip_mat *t, unsigned int row_start, unsigned int row_end, u
 {
     unsigned int i, j, z;
 
-    if (row_start >= 0 && row_start <= row_end && row_end <= t->h && col_start >= 0 && col_start <= col_end && col_end <= t->w)
+    if (/* row_start >= 0 && */ row_start <= row_end && row_end <= t->h && /* col_start >= 0  &&*/ col_start <= col_end && col_end <= t->w)
     {
         unsigned int valorant_alpha = row_end - row_start;
         unsigned int valorant_beta = col_end - col_start;
@@ -574,7 +577,7 @@ ip_mat *ip_mat_add_scalar(ip_mat *a, float c)
 
 void ip_mat_init_random(ip_mat *t, float mean, float var)
 {
-    unsigned int i, j, k, z;
+    unsigned int i, j, z;
 
     for (i = 0; i < t->h; i++)
         for (j = 0; j < t->w; j++)
@@ -585,29 +588,6 @@ void ip_mat_init_random(ip_mat *t, float mean, float var)
                 /* rand = rand * var + mean; */
                 t->data[i][j][z] = rand;
             }
-}
-
-void clamp(ip_mat *t, float low, float high)
-{
-    unsigned int i, j, k, z;
-
-    for (i = 0; i < t->h; i++)
-    {
-        for (j = 0; j < t->w; j++)
-        {
-            for (z = 0; z < t->k; z++)
-            {
-                if (t->data[i][j][z] > high)
-                {
-                    t->data[i][j][z] = high;
-                }
-                if (t->data[i][j][z] < low)
-                {
-                    t->data[i][j][z] = low;
-                }
-            }
-        }
-    }
 }
 
 ip_mat *ip_mat_blend(ip_mat *a, ip_mat *b, float alpha)
@@ -644,7 +624,7 @@ ip_mat *ip_mat_blend(ip_mat *a, ip_mat *b, float alpha)
 ip_mat *ip_mat_to_gray_scale(ip_mat *in)
 {
     ip_mat *result = ip_mat_create(in->h, in->w, in->k, 0);
-    unsigned int i, j, z;
+    unsigned int i, j;
 
     for (i = 0; i < in->h; i++)
     {
@@ -674,7 +654,7 @@ ip_mat *ip_mat_corrupt(ip_mat *a, float amount)
 {
     unsigned int i, j, z;
     float std = amount / 2.0;
-    float a_val, rng, corrupted_val, noise;
+    float a_val, rng, corrupted_val;
 
     ip_mat *corrupted = ip_mat_create(a->h, a->w, a->k, 0.0);
     /* ip_mat *copy = ip_mat_copy(a); */
@@ -707,12 +687,12 @@ ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f)
 
     unsigned int pad_h = ((f->h) - 1) / 2;
     unsigned int pad_w = ((f->w) - 1) / 2;
-
+    ip_mat *result;
     ip_mat *padding = ip_mat_padding(a, pad_h, pad_w);
     printf("paddata\n");
     ip_mat_show(padding);
 
-    ip_mat *result = ip_mat_create(a->h, a->w, a->k, 0.0);
+    result = ip_mat_create(a->h, a->w, a->k, 0.0);
     /* ip_mat *result = ip_mat_create(f->h, f->w, f->k, 0.0); */
 
     /* row_start = a->h row_end = f->h 
@@ -881,7 +861,7 @@ ip_mat *create_gaussian_filter(unsigned int w, unsigned int h, unsigned int k, f
 {
 
     /*  inizializzo gli indici cx e cy della cella centrale del kernel e le variabili per memorizzare le distanze e la somma  */
-
+    unsigned int i, j, z;
     int distanza_x, distanza_y;
     /* pensare al piano cartesiano */
     int cx = h / 2;
@@ -895,7 +875,6 @@ ip_mat *create_gaussian_filter(unsigned int w, unsigned int h, unsigned int k, f
     /* per ogni valori del ciclo calcolo le nuove distanze e le passo come valori nella funzione val_kernel_gaus
    setto per ogni valore del ciclo il valore calcolato dalla funzione val_kernel_gauss */
 
-    int i, j, z;
     for (z = 0; z < k; z++)
     {
         for (i = 0; i < gaussian_filter->h; i++)
@@ -903,10 +882,11 @@ ip_mat *create_gaussian_filter(unsigned int w, unsigned int h, unsigned int k, f
 
             for (j = 0; j < gaussian_filter->w; j++)
             {
+                float kernel_val;
                 distanza_x = j - cx;
                 distanza_y = i - cy;
 
-                float kernel_val = val_kernel_gaus(distanza_x, distanza_y, sigma);
+                kernel_val = val_kernel_gaus(distanza_x, distanza_y, sigma);
                 /* printf("kernel_val[%d,%d] = %f\n", i, j, kernel_val); */
                 set_val(gaussian_filter, i, j, z, kernel_val);
             }
@@ -990,6 +970,29 @@ void rescale(ip_mat *t, float new_max)
         }
     }
     compute_stats(t);
+}
+
+void clamp(ip_mat *t, float low, float high)
+{
+    unsigned int i, j, z;
+
+    for (i = 0; i < t->h; i++)
+    {
+        for (j = 0; j < t->w; j++)
+        {
+            for (z = 0; z < t->k; z++)
+            {
+                if (t->data[i][j][z] > high)
+                {
+                    t->data[i][j][z] = high;
+                }
+                if (t->data[i][j][z] < low)
+                {
+                    t->data[i][j][z] = low;
+                }
+            }
+        }
+    }
 }
 
 /*lohackers*/
