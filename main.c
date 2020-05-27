@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "ip_lib.h"
 #include "bmp.c"
+#include "ip_lib.c"
 
 int main()
 {
@@ -46,13 +47,13 @@ int main()
     ip_mat *subset = ip_mat_subset(paddata, 4, 7, 4, 7);
     ip_mat *cane = create_average_filter(3, 3, 3);
 
-    ip_mat *gaussian_filter = create_gaussian_filter(9, 9, 3, 5);
+    ip_mat *gaussian_filter = create_gaussian_filter(3, 3, 3, 0.5);
     /*     ip_mat_show(gaussian_filter); */
 
-    ip_mat *gaussian_filtered = ip_mat_convolve(input_img2, gaussian_filter);
-    clamp(gaussian_filtered, 0, 255);
-    Bitmap *pippo = ip_mat_to_bitmap(gaussian_filtered);
-    bm_save(pippo, "gaussian_filter.bmp");
+    /* ip_mat *gaussian_filtered = ip_mat_convolve(input_img2, gaussian_filter);
+    clamp(gaussian_filtered, 0, 255); */
+    /* Bitmap *pippo = ip_mat_to_bitmap(gaussian_filtered);
+    bm_save(pippo, "gaussian_filter.bmp"); */
 
     ip_mat_free(gray);
     ip_mat_free(corrupt);

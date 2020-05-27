@@ -8,6 +8,7 @@
 
 #define E 2.71828182846
 
+/*controllo puntatore ip_mat = null*/
 void is_null(ip_mat *t)
 {
     if (t == NULL)
@@ -16,6 +17,7 @@ void is_null(ip_mat *t)
         exit(1);
     }
 }
+/*mostra canali matrice ed annessi valori*/
 void ip_mat_show(ip_mat *t)
 {
     is_null(t);
@@ -35,7 +37,7 @@ void ip_mat_show(ip_mat *t)
         printf("\n");
     }
 }
-
+/*mostra stats annesse di una ip_mat dopo averle calcolate*/
 void ip_mat_show_stats(ip_mat *t)
 {
     unsigned int k;
@@ -131,7 +133,7 @@ float get_normal_random(float media, float std)
 
     return media + num * std;
 }
-
+/*creazione di una ip_mat data altezza, larghezza, canali (3 per img) e valore elementi*/
 ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
 {
     unsigned int i, j, z;
@@ -141,6 +143,7 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
     float ***data;
     nuova = (ip_mat *)malloc(sizeof(ip_mat));
 
+    /* h = altezza o numero righe, w = larghezza o numero colonne, k= profondità o numero canali*/
     nuova->w = w;
     nuova->h = h;
     nuova->k = k;
@@ -179,7 +182,7 @@ ip_mat *ip_mat_create(unsigned int h, unsigned int w, unsigned int k, float v)
         }
     }
 
-    /* assign values to allocated memory */
+    /* assegnazione valori a data */
     for (i = 0; i < h; i++)
         for (j = 0; j < w; j++)
             for (z = 0; z < k; z++)
@@ -199,7 +202,6 @@ void ip_mat_free(ip_mat *a)
     if (a != NULL)
     {
         free(a->stat);
-        /* printf("struttura statistiche liberata\n"); */
 
         for (i = 0; i < a->h; i++)
         {
@@ -216,13 +218,14 @@ void ip_mat_free(ip_mat *a)
         printf("Il puntatore %p punta a NULL\n", (void *)&a);
     }
 }
-
+/*calcolo stat=min, min di partenza = primo valore primo canale -> confronto con ogni canale ed elemento*/
 float compute_min_data(ip_mat *t, unsigned int h, unsigned int w, unsigned int k)
 {
     unsigned int i, j;
     float min;
 
     is_null(t);
+
     min = get_val(t, 0, 0, k);
     for (i = 0; i < h; i++)
     {
@@ -237,7 +240,7 @@ float compute_min_data(ip_mat *t, unsigned int h, unsigned int w, unsigned int k
     }
     return min;
 }
-
+/*calcolo stat=man, max di partenza = primo valore primo canale -> confronto con ogni canale ed elemento*/
 float compute_max_data(ip_mat *t, unsigned int h, unsigned int w, unsigned int k)
 {
     unsigned int i, j;
@@ -259,7 +262,7 @@ float compute_max_data(ip_mat *t, unsigned int h, unsigned int w, unsigned int k
     }
     return max;
 }
-
+/*calcolo stat=media, accumulatore e contatore*/
 float compute_mean_data(ip_mat *t, unsigned int h, unsigned int w, unsigned int k)
 {
     unsigned int i, j;
@@ -279,7 +282,7 @@ float compute_mean_data(ip_mat *t, unsigned int h, unsigned int w, unsigned int 
     }
     return acc / counter;
 }
-
+/*esibizione stats di una ip_mat per canale*/
 void compute_stats(ip_mat *t)
 {
     unsigned int i;
@@ -294,7 +297,7 @@ void compute_stats(ip_mat *t)
         t->stat[i].mean = compute_mean_data(t, t->h, t->w, i);
     }
 }
-
+/*somma di due ip_mat, le dimensioni devono essere uguali*/
 ip_mat *ip_mat_sum(ip_mat *a, ip_mat *b)
 {
     unsigned int i, j, z;
@@ -327,13 +330,14 @@ ip_mat *ip_mat_sum(ip_mat *a, ip_mat *b)
         return sum;
     }
 }
-
+/*differenza di due ip_mat, le dimensioni devono essere uguali*/
 ip_mat *ip_mat_sub(ip_mat *a, ip_mat *b)
 {
     unsigned int i, j, z;
 
     is_null(a);
     is_null(b);
+
     if (a->h != b->h || a->w != b->w || a->k != b->k)
     {
         printf("Matrici diverse\n");
@@ -359,15 +363,16 @@ ip_mat *ip_mat_sub(ip_mat *a, ip_mat *b)
         return sub;
     }
 }
-
+/*sotto matrice di una ip_mat di input. Necessito di row/col start ed end della sottomatrice da creare*/
 ip_mat *ip_mat_subset(ip_mat *t, unsigned int row_start, unsigned int row_end, unsigned int col_start, unsigned int col_end)
 {
     unsigned int i, j, z;
 
     is_null(t);
-
-    if (/* row_start >= 0 && */ row_start <= row_end && row_end <= t->h && /* col_start >= 0  &&*/ col_start <= col_end && col_end <= t->w)
+    /* controllo che le dimensioni di input non sforino la ip_mat di partenza*/
+    if (row_start <= row_end && row_end <= t->h && col_start <= col_end && col_end <= t->w)
     {
+        /*calcolo dimensione della sottomatrice, k arbitrario*/
         unsigned int valorant_alpha = row_end - row_start;
         unsigned int valorant_beta = col_end - col_start;
         ip_mat *sub_mat = ip_mat_create(valorant_alpha, valorant_beta, t->k, 0);
@@ -377,6 +382,7 @@ ip_mat *ip_mat_subset(ip_mat *t, unsigned int row_start, unsigned int row_end, u
             {
                 for (j = 0; j < sub_mat->w; j++)
                 {
+                    /*setto i valori della sottomatrice prendendo i valori della matrice di partenza a partire da rowstart/colstart*/
                     set_val(sub_mat, i, j, z, get_val(t, i + row_start, j + col_start, z));
                 }
             }
@@ -389,7 +395,9 @@ ip_mat *ip_mat_subset(ip_mat *t, unsigned int row_start, unsigned int row_end, u
         exit(1);
     }
 }
-
+/*concatenazione di due ip_mat su di una dimensione. Dimensione = 0, unione valori delle a->h+b->h*/
+/* Dimensione =1, unione valori delle a->w+b->w */
+/* Dimensione =2, unione valori delle a->k+b->k */
 ip_mat *ip_mat_concat(ip_mat *a, ip_mat *b, int dimensione)
 {
 
@@ -399,12 +407,16 @@ ip_mat *ip_mat_concat(ip_mat *a, ip_mat *b, int dimensione)
     is_null(a);
     is_null(b);
 
+    /*check sul parametro in input dimensione e check essenziale sulle dimensioni delle ip_mat di input*/
+    /*a-b devono avere le stesse dimensioni*/
     if (dimensione == 0)
     {
         if (a->w == b->w && a->k == b->k)
         {
             concatenata = ip_mat_create(a->h + b->h, a->w, a->k, 0);
 
+            /*lavoriamo sulle h. Da 0<=i<=a->h prendo i valori di a->h, oltre prendo quelli di b->h*/
+            /*sneakything -> get_val(b, i-(a->h)) per continuare nello stesso for*/
             for (z = 0; z < concatenata->k; z++)
             {
                 for (i = 0; i < a->h; i++)
@@ -435,6 +447,8 @@ ip_mat *ip_mat_concat(ip_mat *a, ip_mat *b, int dimensione)
         {
             concatenata = ip_mat_create(a->h, a->w + b->w, a->k, 0);
 
+            /*lavoriamo sulle w. Da 0<=j<=a->w prendo i valori di a->w, oltre prendo quelli di b->w*/
+            /*sneakything -> get_val(b, i, j-(a->w)) per continuare nello stesso for*/
             for (z = 0; z < concatenata->k; z++)
             {
                 for (i = 0; i < a->h; i++)
@@ -464,6 +478,8 @@ ip_mat *ip_mat_concat(ip_mat *a, ip_mat *b, int dimensione)
         {
             concatenata = ip_mat_create(a->h, a->w, a->k + b->k, 0);
 
+            /*lavoriamo sulle k. Da 0<=z<=a->k prendo i valori di a->k, oltre prendo quelli di b->k*/
+            /*sneakything -> get_val(b, i, j, z-(a->k)) per continuare nello stesso for*/
             for (z = 0; z < a->k; z++)
             {
                 for (i = 0; i < a->h; i++)
@@ -499,11 +515,9 @@ ip_mat *ip_mat_concat(ip_mat *a, ip_mat *b, int dimensione)
     return concatenata;
 }
 
+/*copia una ip_mat di input in una nuova ip_mat. Stessi valori, stesse dimensioni*/
 ip_mat *ip_mat_copy(ip_mat *in)
 {
-
-    /*  variabili di scorrimento per i cicli */
-
     unsigned int i, j, z;
     ip_mat *copy;
 
@@ -513,7 +527,6 @@ ip_mat *ip_mat_copy(ip_mat *in)
     copy = ip_mat_create(in->h, in->w, in->k, 00.0);
 
     /* setto i valori della matrice copy nella posizione data dal ciclo for  uguali a quelli della matrice in ingresso */
-
     for (z = 0; z < copy->k; z++)
     {
         for (i = 0; i < copy->h; i++)
@@ -526,11 +539,10 @@ ip_mat *ip_mat_copy(ip_mat *in)
     }
     return copy;
 }
-
+/*calcola la media dei valori di due ip_mat, la restituisco in una nuova ip_mat con valore media canale per canale*/
+/*dimensioni devono essere identiche.*/
 ip_mat *ip_mat_mean(ip_mat *a, ip_mat *b)
 {
-
-    /* variabili di scorrimento */
     unsigned int i, j, z;
 
     is_null(a);
@@ -565,51 +577,44 @@ ip_mat *ip_mat_mean(ip_mat *a, ip_mat *b)
         return media;
     }
 }
-
+/*moltiplicazione tra una ip_mat, per ogni valore in ogni canale, ed uno scalare C dato in input*/
 ip_mat *ip_mat_mul_scalar(ip_mat *a, float c)
 {
     unsigned int i, j, z;
     float supp;
     ip_mat *nuova_ms;
-    unsigned int h = a->h;
-    unsigned int w = a->w;
-    unsigned int k = a->k;
 
     is_null(a);
 
-    nuova_ms = ip_mat_create(h, w, k, 9.9);
-    for (i = 0; i < h; i++)
+    nuova_ms = ip_mat_copy(a);
+    for (i = 0; i < nuova_ms->h; i++)
     {
-        for (j = 0; j < w; j++)
+        for (j = 0; j < nuova_ms->w; j++)
         {
-            for (z = 0; z < k; z++)
+            for (z = 0; z < nuova_ms->k; z++)
             {
                 supp = get_val(a, i, j, z);
                 set_val(nuova_ms, i, j, z, supp * c);
             }
         }
     }
-
     return nuova_ms;
 }
-
+/*addizione tra una ip_mat, per ogni valore in ogni canale, ed uno scalare C dato in input*/
 ip_mat *ip_mat_add_scalar(ip_mat *a, float c)
 {
     unsigned int i, j, z;
     float supp;
     ip_mat *nuova_as;
-    unsigned int h = a->h;
-    unsigned int w = a->w;
-    unsigned int k = a->k;
 
     is_null(a);
 
-    nuova_as = ip_mat_create(h, w, k, 9.9);
-    for (i = 0; i < h; i++)
+    nuova_as = ip_mat_copy(a);
+    for (i = 0; i < nuova_as->h; i++)
     {
-        for (j = 0; j < w; j++)
+        for (j = 0; j < nuova_as->w; j++)
         {
-            for (z = 0; z < k; z++)
+            for (z = 0; z < nuova_as->k; z++)
             {
                 supp = get_val(a, i, j, z);
                 set_val(nuova_as, i, j, z, supp + c);
@@ -619,7 +624,8 @@ ip_mat *ip_mat_add_scalar(ip_mat *a, float c)
 
     return nuova_as;
 }
-
+/*modifico i valori di una ip_mat di input con rand, ovvero un valore generato da una gaussian con media mean e varianza var */
+/*utilizzo get_normal_random, metodo fornito*/
 void ip_mat_init_random(ip_mat *t, float mean, float var)
 {
     unsigned int i, j, z;
@@ -637,6 +643,10 @@ void ip_mat_init_random(ip_mat *t, float mean, float var)
             }
 }
 
+/*<----------------------- PARTE 2: OPERAZIONI SULLE IMMAGINI---------------------------------->*/
+
+/* Fusione di due ip_mat. Dimensioni devono combaciare. Controllo valore alpha rientri nel range */
+/* comb convessa  = alpha*valoreA + (1-alpha)*valoreB in ogni canale */
 ip_mat *ip_mat_blend(ip_mat *a, ip_mat *b, float alpha)
 {
 
@@ -663,7 +673,7 @@ ip_mat *ip_mat_blend(ip_mat *a, ip_mat *b, float alpha)
             for (j = 0; j < a->w; j++)
                 for (z = 0; z < a->k; z++)
                 {
-                    /*bait*/
+                    /*computazione*/
                     float ercole = alpha * get_val(a, i, j, z);
                     float filottete = (1 - alpha) * get_val(b, i, j, z);
                     set_val(blend, i, j, z, ercole + filottete);
@@ -671,7 +681,9 @@ ip_mat *ip_mat_blend(ip_mat *a, ip_mat *b, float alpha)
         return blend;
     }
 }
-
+/*converto una ip_mat "RGB" ad una ip_mat su scala di grigio*/
+/*lavoro sui valori dei canali, per ogni posizione, calcolo la media di quella posizione sui 3 canali ((0,0,0)+(0,0,1)+(0,0,2))/3*/
+/*assegno questo valore nella posizione della ip_risultato, sui 3 canali -> il risultato avrà 3 canali dai valori uguali */
 ip_mat *ip_mat_to_gray_scale(ip_mat *in)
 {
     ip_mat *result;
@@ -694,7 +706,7 @@ ip_mat *ip_mat_to_gray_scale(ip_mat *in)
 
     return result;
 }
-
+/*illuminazione di una ip_mat. Aggiungo il valore bright ad ogni valore in ogni canale e restituisco l'output*/
 ip_mat *ip_mat_brighten(ip_mat *a, float bright)
 {
     ip_mat *result;
@@ -706,9 +718,9 @@ ip_mat *ip_mat_brighten(ip_mat *a, float bright)
     return result;
 }
 
-/* ci verrà fornito una nuova funzione get_normal 
- * che genererà numeri casuali gaussiani
- */
+/*Corruzione di una ip_mat con un valore gaussiano modificato da amount. Valore output = val+gauss*amount  */
+/* mi salvo il valore di a in una data posizione. Genero un valore dalla gaussiana con intervallo 0 e amount/2.*/
+/* Sommo il valore precedentemente salvato con il valore generato per ottenere il valore corrotto e posiziono tutto nella sua posizione*/
 ip_mat *ip_mat_corrupt(ip_mat *a, float amount)
 {
     unsigned int i, j, z;
@@ -719,9 +731,10 @@ ip_mat *ip_mat_corrupt(ip_mat *a, float amount)
     is_null(a);
 
     corrupted = ip_mat_create(a->h, a->w, a->k, 0.0);
+    /*differente soluzione*/
     /* ip_mat *copy = ip_mat_copy(a); */
-    /*     ip_mat *random = ip_mat_create(a->h, a->w, a->k, 0);
-    ip_mat_init_random(random, 0, 2 * amount); */
+    /*ip_mat *random = ip_mat_create(a->h, a->w, a->k, 0);*/
+    /*ip_mat_init_random(random, 0, 2 * amount); */
     for (i = 0; i < a->h; i++)
     {
         for (j = 0; j < a->w; j++)
@@ -732,17 +745,22 @@ ip_mat *ip_mat_corrupt(ip_mat *a, float amount)
 
                 rng = get_normal_random(0, std);
                 corrupted_val = a_val + (rng);
-                /*printf("%f\n", corrupted_val);*/
                 set_val(corrupted, i, j, z, corrupted_val);
             }
         }
     }
-    clamp(corrupted, 0, 255);
     return corrupted;
 }
 
 /*---------------------------------------PARTE 3 -----------------------------------------*/
 
+/*convoluzione di una ip_mat a con un filtro f*/
+/*calcolo i valori di padding dalle dimensioni del fitro input f (righe-1/2, colonne-1/2), e applico un padding alla matrice di input A*/
+/*creo una matrice risultato con dimensioni uguali alla matrice di input A*/
+/*tricky part ora : i valori della matrice risultato saranno la somma delle moltiplicazioni di ogni sottomatrice di A per il filtro F*/
+/* per ottenere questo creo X sottomatrici di A, utilizzando le dimensioni del filtro per definire row/col END. */
+/* scorro la sottomatrice e calcolo il valore finale -> valore posizione 0 0 0 sottomatrice + (valore posizione 0 0 0 sottomatrice * valore posizione 0 0 0 filtro)  */
+/*posiziono in result i risultati*/
 ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f)
 {
     unsigned int i, j, z;
@@ -760,26 +778,7 @@ ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f)
     ip_mat_show(padding);
 
     result = ip_mat_create(a->h, a->w, a->k, 0.0);
-    /* ip_mat *result = ip_mat_create(f->h, f->w, f->k, 0.0); */
 
-    /* row_start = a->h row_end = f->h 
-     * col_start col_end
-     *  */
-
-    /* row_start = 0+1 row_end = f->h +1        row-end = a->h
-     * col_start col_end
-     *  */
-    /* 
-        sub_set(0 _ 2, 0 _ 2) 
-
-        se faccio a resulti l padding sulla base del filtro lo paddo di 1 per lato
-        che non è gucci
-        sono riandato via
-
-        283 -> 285 
-        362 -> 364 
-
-     */
     for (z = 0; z < padding->k; z++)
     {
         for (i = 0; i <= (padding->h - f->h); i++)
@@ -790,7 +789,7 @@ ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f)
                 float final_val = 0;
 
                 ip_mat *sub = ip_mat_subset(padding, i, f->h + i, j, f->w + j);
-                /* printf("SUB  i = %d, j = %d\n", i, j); */
+                /* printf("sub  i = %d, j = %d\n", i, j); */
                 /* ip_mat_show(sub); */
 
                 for (r = 0; r < sub->h; r++)
@@ -814,7 +813,10 @@ ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f)
     ip_mat_free(padding);
     return result;
 }
-
+/*padding di una ip_mat di input con valori condizionati da pad_h e pad_W*/
+/* dovro aggiungere un padding orizzontale e verticale. il padding verticale equivale ad a->h + 2*pad_h */
+/* il padding orizzonale equivarrà ad a->w + 2* pad_w   */
+/* i valori rimangono quelli della ip_mat a iniziale, cambiano solo le dimensioni dell'output, appunto paddate*/
 ip_mat *ip_mat_padding(ip_mat *a, unsigned int pad_h, unsigned int pad_w)
 {
     unsigned int i, j, z;
@@ -840,7 +842,7 @@ ip_mat *ip_mat_padding(ip_mat *a, unsigned int pad_h, unsigned int pad_w)
     return result;
 }
 
-/* Crea un filtro di sharpening */
+/* creazione filtro sharpen 3x3x3, 0 -1 0 /-1 5 -1/ 0-1 0  */
 ip_mat *create_sharpen_filter()
 {
     /*  creo una nuova ip_mat 3x3x3 e la inizializzo a 0*/
@@ -863,7 +865,7 @@ ip_mat *create_sharpen_filter()
     return filtro;
 }
 
-/* Crea un filtro per rilevare i bordi */
+/* creazione filtro edge 3x3x3, -1 -1 -1 /-1 8 -1/ -1 -1 -1, tutti -1, 8 al centro  */
 ip_mat *create_edge_filter()
 {
 
@@ -879,7 +881,7 @@ ip_mat *create_edge_filter()
     return filtro;
 }
 
-/* Crea un filtro per aggiungere profondità */
+/* creazione filtro emboss 3x3x3, -2 -1 0 /-1 1 1/ 0 1 2 */
 ip_mat *create_emboss_filter()
 {
 
@@ -904,7 +906,7 @@ ip_mat *create_emboss_filter()
     return filtro;
 }
 
-/* Crea un filtro medio per la rimozione del rumore */
+/* creazione filtro average w*h || se w=3 h=3 -> 3x3 c c c/ c c c / c c c  || c = 1/(w*h)  */
 ip_mat *create_average_filter(unsigned int w, unsigned int h, unsigned int k)
 {
 
@@ -918,24 +920,21 @@ ip_mat *create_average_filter(unsigned int w, unsigned int h, unsigned int k)
     return avg_filter;
 }
 
-/* Crea un filtro gaussiano per la rimozione del rumore */
-float val_kernel_gaus(int x, int y, float sigma)
-{
-    float result;
-    result = (1 / ((2 * PI) * (pow(sigma, 2)))) * pow(E, -1 * (((pow(x, 2) + pow(y, 2))) / (2 * (pow(sigma, 2)))));
-
-    return result;
-}
-
+/* creazione del filtro gaussiano per rimuovere il rumore*/
 ip_mat *create_gaussian_filter(unsigned int w, unsigned int h, unsigned int k, float sigma)
 {
 
-    /*  inizializzo gli indici cx e cy della cella centrale del kernel e le variabili per memorizzare le distanze e la somma  */
+    /* 1) calcolo cella centrale del filtro */
+    /* 2) calcolo la distanza dal centro per ogni posizione del filtro */
+    /* 3) calcolo il kernel per ogni posizione del filtro con l'adeguata distanza appena calcolata  */
+    /* 4) normalizzo il filtro, ovvero divido ogni valore per la somma di tutti i valori del filtro */
+    /* et voilà */
+    float sigma_quadrato = pow(sigma, 2.);
     unsigned int i, j, z;
-    int distanza_x, distanza_y;
-    /* pensare al piano cartesiano */
-    int cx = h / 2;
-    int cy = w / 2;
+    int x, y;
+    /* prendo il  centro di una matrice w*h con w e h di input */
+    int cx = (h - 1) / 2;
+    int cy = (w - 1) / 2;
     float somma = 0;
 
     /*  creo una nuova ip map wxhxk */
@@ -947,31 +946,24 @@ ip_mat *create_gaussian_filter(unsigned int w, unsigned int h, unsigned int k, f
 
     for (z = 0; z < k; z++)
     {
+        somma = 0;
+
         for (i = 0; i < gaussian_filter->h; i++)
         {
 
             for (j = 0; j < gaussian_filter->w; j++)
             {
                 float kernel_val;
-                distanza_x = j - cx;
-                distanza_y = i - cy;
 
-                kernel_val = val_kernel_gaus(distanza_x, distanza_y, sigma);
-                /* printf("kernel_val[%d,%d] = %f\n", i, j, kernel_val); */
+                x = i - cx;
+                y = j - cy;
+
+                kernel_val = (1. / (2. * PI * sigma_quadrato)) * pow(E, -1 * (((pow(x, 2) + pow(y, 2))) / (2 * sigma_quadrato)));
+
+                somma += kernel_val;
+
                 set_val(gaussian_filter, i, j, z, kernel_val);
             }
-        }
-    }
-
-    /*   calcolo la somma dei valori del canale */
-
-    for (i = 0; i < gaussian_filter->h; i++)
-    {
-        for (j = 0; j < gaussian_filter->w; j++)
-        {
-            somma = somma + get_val(gaussian_filter, i, j, 1);
-            /*somma1 = somma1 + get_val(gaussian_filter, i, j, 1);
-            somma2 = somma2 + get_val(gaussian_filter, i, j, 2); */
         }
     }
 
@@ -993,16 +985,8 @@ ip_mat *create_gaussian_filter(unsigned int w, unsigned int h, unsigned int k, f
     return gaussian_filter;
 }
 
-/* Effettua una riscalatura dei dati tale che i valori siano in [0,new_max].
- * Utilizzate il metodo compute_stat per ricavarvi il min, max per ogni canale.
- *
- * I valori sono scalati tramite la formula valore-min/(max - min)
- *
- * Si considera ogni indice della terza dimensione indipendente, quindi l'operazione
- * di scalatura va ripetuta per ogni "fetta" della matrice 3D.
- * Successivamente moltiplichiamo per new_max gli elementi della matrice in modo da ottenere un range
- * di valori in [0,new_max].
- * */
+/* Rescale di una ip_mat ovvero si assicura che i valori della ip_mat siano contenuti in un range [0, new_max]. New_max = valore in questione - min/(max-min). */
+/* otteniamo max e min attraverso compute stats. Presente controllo max=min che comporterebbe una divisione per 0. */
 void rescale(ip_mat *t, float new_max)
 {
     unsigned int i, j, z;
@@ -1043,6 +1027,8 @@ void rescale(ip_mat *t, float new_max)
     compute_stats(t);
 }
 
+/*Altra funzione di rescale, che si basa su due valori [high,low] attraverso i quali confronta ogni valore della ip_mat di input*/
+/*e se sono minori/maggiori li setta uguali ai valori del range su cui confronta */
 void clamp(ip_mat *t, float low, float high)
 {
     unsigned int i, j, z;
@@ -1067,12 +1053,3 @@ void clamp(ip_mat *t, float low, float high)
         }
     }
 }
-
-/*lohackers*/
-/* float get_normal_random_with_mean_var(float mean, float var)
-{
-    float sigma;
-    assert(var >= 0);
-    sigma = sqrt(var);
-    return get_normal_random() * sigma + mean;
-} */
