@@ -218,83 +218,42 @@ void ip_mat_free(ip_mat *a)
         printf("Il puntatore %p punta a NULL\n", (void *)&a);
     }
 }
-/*calcolo stat=min, min di partenza = primo valore primo canale -> confronto con ogni canale ed elemento*/
-float compute_min_data(ip_mat *t, unsigned int h, unsigned int w, unsigned int k)
-{
-    unsigned int i, j;
-    float min;
 
-    is_null(t);
-
-    min = get_val(t, 0, 0, k);
-    for (i = 0; i < h; i++)
-    {
-        for (j = 0; j < w; j++)
-        {
-            float temp = get_val(t, i, j, k);
-            if (min > temp)
-            {
-                min = temp;
-            }
-        }
-    }
-    return min;
-}
-/*calcolo stat=man, max di partenza = primo valore primo canale -> confronto con ogni canale ed elemento*/
-float compute_max_data(ip_mat *t, unsigned int h, unsigned int w, unsigned int k)
-{
-    unsigned int i, j;
-    float max;
-
-    is_null(t);
-
-    max = get_val(t, 0, 0, k);
-    for (i = 0; i < h; i++)
-    {
-        for (j = 0; j < w; j++)
-        {
-            float temp = get_val(t, i, j, k);
-            if (max < temp)
-            {
-                max = temp;
-            }
-        }
-    }
-    return max;
-}
-/*calcolo stat=media, accumulatore e contatore*/
-float compute_mean_data(ip_mat *t, unsigned int h, unsigned int w, unsigned int k)
-{
-    unsigned int i, j;
-
-    float acc = 0;
-    int counter = 0;
-
-    is_null(t);
-
-    for (i = 0; i < h; i++)
-    {
-        for (j = 0; j < w; j++)
-        {
-            acc += get_val(t, i, j, k);
-            counter++;
-        }
-    }
-    return acc / counter;
-}
-/*esibizione stats di una ip_mat per canale*/
+/*esibizione stats di una ip_mat per canale ; max e min per confronto. Mean con accumulatore e contatore.*/
 void compute_stats(ip_mat *t)
 {
-    unsigned int i;
+    unsigned int i, j, z;
 
     is_null(t);
 
-    for (i = 0; i < t->k; i++)
+    for (z = 0; z < t->k; z++)
     {
+        float min, max;
+        float counter = 0;
+        float somma = 0;
+        min = max = get_val(t, 0, 0, z);
 
-        t->stat[i].min = compute_min_data(t, t->h, t->w, i);
-        t->stat[i].max = compute_max_data(t, t->h, t->w, i);
-        t->stat[i].mean = compute_mean_data(t, t->h, t->w, i);
+        for (i = 0; i < t->h; i++)
+        {
+            for (j = 0; j < t->w; j++)
+            {
+                float temp = get_val(t, i, j, z);
+
+                if (temp < min)
+                {
+                    min = temp;
+                }
+                if (temp > max)
+                {
+                    max = temp;
+                }
+                somma += temp;
+                counter++;
+            }
+        }
+        t->stat[z].max = max;
+        t->stat[z].min = min;
+        t->stat[z].mean = somma / counter;
     }
 }
 /*somma di due ip_mat, le dimensioni devono essere uguali*/
@@ -307,7 +266,7 @@ ip_mat *ip_mat_sum(ip_mat *a, ip_mat *b)
 
     if (a->h != b->h || a->w != b->w || a->k != b->k)
     {
-        printf("Matrici diverse\n");
+        printf("ip_mat_sum: Operazione non consentita, range matrici diverse\n");
         exit(1);
     }
     else
@@ -340,7 +299,7 @@ ip_mat *ip_mat_sub(ip_mat *a, ip_mat *b)
 
     if (a->h != b->h || a->w != b->w || a->k != b->k)
     {
-        printf("Matrici diverse\n");
+        printf("ip_mat_sub: Operazione non consentita, range matrici diverse\n");
         exit(1);
     }
     else
@@ -391,7 +350,7 @@ ip_mat *ip_mat_subset(ip_mat *t, unsigned int row_start, unsigned int row_end, u
     }
     else
     {
-        printf("Valori non accettabili!\n");
+        printf("ip_mat_subset: Operazione non consentita, range valori inaccettabili!\n");
         exit(1);
     }
 }
@@ -437,7 +396,7 @@ ip_mat *ip_mat_concat(ip_mat *a, ip_mat *b, int dimensione)
         }
         else
         {
-            printf("Non è possibile fare la concatenazione\n");
+            printf("ip_mat_concat: Operazione non consentita, range matrici diverse\n");
             exit(1);
         }
     }
@@ -468,7 +427,7 @@ ip_mat *ip_mat_concat(ip_mat *a, ip_mat *b, int dimensione)
 
         else
         {
-            printf("Non è possibile fare la concatenazione\n");
+            printf("ip_mat_concat: Operazione non consentita, range matrici diverse\n");
             exit(1);
         }
     }
@@ -503,13 +462,13 @@ ip_mat *ip_mat_concat(ip_mat *a, ip_mat *b, int dimensione)
         }
         else
         {
-            printf("Non è possibile fare la concatenazione\n");
+            printf("ip_mat_concat: Operazione non consentita, range matrici diverse\n");
             exit(1);
         }
     }
     else
     {
-        printf("Dimensione Errata\n");
+        printf("ip_mat_concat: Operazione non consentita, la dimensione deve esse compresa tra 0 e 2 :)\n");
         exit(1);
     }
     return concatenata;
@@ -551,7 +510,7 @@ ip_mat *ip_mat_mean(ip_mat *a, ip_mat *b)
     /* verifico che le matrici date siano della stessa dimensione, altrimenti ritorno un printf di errore  */
     if (a->h != b->h || a->w != b->w || a->k != b->k)
     {
-        printf("Matrici con dimensioni diverse\n");
+        printf("ip_mat_mean: Operazione non consentita, le matrici non sono uguali\n");
         exit(1);
     }
     else
@@ -626,6 +585,7 @@ ip_mat *ip_mat_add_scalar(ip_mat *a, float c)
 }
 /*modifico i valori di una ip_mat di input con rand, ovvero un valore generato da una gaussian con media mean e varianza var */
 /*utilizzo get_normal_random, metodo fornito*/
+/*i valori dovrebbero rimanere var^2 + mean*/
 void ip_mat_init_random(ip_mat *t, float mean, float var)
 {
     unsigned int i, j, z;
@@ -643,7 +603,7 @@ void ip_mat_init_random(ip_mat *t, float mean, float var)
             }
 }
 
-/*<----------------------- PARTE 2: OPERAZIONI SULLE IMMAGINI---------------------------------->*/
+/*<-----------------------  PARTE 2: OPERAZIONI SULLE IMMAGINI   ---------------------------------->*/
 
 /* Fusione di due ip_mat. Dimensioni devono combaciare. Controllo valore alpha rientri nel range */
 /* comb convessa  = alpha*valoreA + (1-alpha)*valoreB in ogni canale */
@@ -655,12 +615,12 @@ ip_mat *ip_mat_blend(ip_mat *a, ip_mat *b, float alpha)
 
     if (a->h != b->h || a->w != b->w || a->k != b->k)
     {
-        printf("Le due ip_mat hanno dimensione diversa, impossibile fare il blend\n");
+        printf("ip_mat_blend: Le due ip_mat hanno dimensione diversa, impossibile fare il blend\n");
         exit(1);
     }
     else if (alpha < 0.0 || alpha > 1.0)
     {
-        printf("Il valore alpha non rientra nel range [0,1]\n");
+        printf("ip_mat_blend: Il valore alpha non rientra nel range [0,1]\n");
         exit(1);
     }
     else
@@ -723,18 +683,14 @@ ip_mat *ip_mat_brighten(ip_mat *a, float bright)
 /* Sommo il valore precedentemente salvato con il valore generato per ottenere il valore corrotto e posiziono tutto nella sua posizione*/
 ip_mat *ip_mat_corrupt(ip_mat *a, float amount)
 {
-    unsigned int i, j, z;
-    ip_mat *corrupted;
+    /* unsigned int i, j, z; */
+    /* ip_mat *corrupted; */
     float std = amount / 2.0;
-    float a_val, rng, corrupted_val;
+    /* float a_val, rng, corrupted_val; */
 
     is_null(a);
 
-    corrupted = ip_mat_create(a->h, a->w, a->k, 0.0);
-    /*differente soluzione*/
-    /* ip_mat *copy = ip_mat_copy(a); */
-    /*ip_mat *random = ip_mat_create(a->h, a->w, a->k, 0);*/
-    /*ip_mat_init_random(random, 0, 2 * amount); */
+    /* corrupted = ip_mat_create(a->h, a->w, a->k, 0.0);
     for (i = 0; i < a->h; i++)
     {
         for (j = 0; j < a->w; j++)
@@ -748,7 +704,11 @@ ip_mat *ip_mat_corrupt(ip_mat *a, float amount)
                 set_val(corrupted, i, j, z, corrupted_val);
             }
         }
-    }
+    } */
+    ip_mat *temp = ip_mat_copy(a);
+    ip_mat_init_random(temp, 0, std);
+    ip_mat *corrupted = ip_mat_sum(a, temp);
+    
     return corrupted;
 }
 
@@ -936,14 +896,10 @@ ip_mat *create_gaussian_filter(unsigned int w, unsigned int h, unsigned int k, f
     int cx = (h - 1) / 2;
     int cy = (w - 1) / 2;
     float somma = 0;
-
     /*  creo una nuova ip map wxhxk */
-
     ip_mat *gaussian_filter = ip_mat_create(w, h, k, 0.00);
-
     /* per ogni valori del ciclo calcolo le nuove distanze e le passo come valori nella funzione val_kernel_gaus
    setto per ogni valore del ciclo il valore calcolato dalla funzione val_kernel_gauss */
-
     for (z = 0; z < k; z++)
     {
         somma = 0;
@@ -966,7 +922,6 @@ ip_mat *create_gaussian_filter(unsigned int w, unsigned int h, unsigned int k, f
             }
         }
     }
-
     /* setto i nuovi valori  dividendoli per la somma */
     for (z = 0; z < k; z++)
     {
