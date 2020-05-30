@@ -10,6 +10,9 @@
 #test main
 mainbello.c
 main.c
+main
+main_iplib
+test_bmp
 
 # Object files
 *.o
