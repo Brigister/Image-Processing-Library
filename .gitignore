@@ -4,6 +4,13 @@
 #vscode config
 .vscode
 
+#bmp
+*.bmp
+
+#test main
+mainbello.c
+main.
+
 # Object files
 *.o
 *.ko
