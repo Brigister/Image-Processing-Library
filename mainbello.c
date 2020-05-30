@@ -9,7 +9,7 @@ int main()
 
     ip_mat *input_img = NULL;
 
-    b = bm_load("mongolfiere.bmp");
+    b = bm_load("u.bmp");
 
     Bitmap *c = NULL;
 
@@ -20,23 +20,35 @@ int main()
     input_img = bitmap_to_ip_mat(b);
     input_img2 = bitmap_to_ip_mat(c);
 
-    ip_mat *blend = ip_mat_blend(input_img, input_img2, 0.3);
-    Bitmap *bmblend = ip_mat_to_bitmap(blend);
-    bm_save(bmblend, "testblend.bmp");
+    ip_mat *filtro1 = create_emboss_filter();
 
-    ip_mat *bright = ip_mat_brighten(input_img, 50);
-    clamp(bright, 0, 255);
-    Bitmap *bmbright = ip_mat_to_bitmap(bright);
-    bm_save(bmbright, "testbright.bmp");
+    ip_mat *filtro2 = create_edge_filter();
 
-    ip_mat *corrupt = ip_mat_corrupt(input_img, 50);
-    clamp(corrupt, 0, 255);
-    Bitmap *bmcorrupt = ip_mat_to_bitmap(corrupt);
-    bm_save(bmcorrupt, "testcorrupt5.bmp");
+    ip_mat *filtro3 = create_sharpen_filter();
+    ip_mat *nuova = ip_mat_create(7, 7, 3, 22);
 
-    ip_mat *gray = ip_mat_to_gray_scale(input_img);
-    Bitmap *bmgray = ip_mat_to_bitmap(gray);
-    bm_save(bmgray, "testgray.bmp");
+    for (int k = 0; k < 3; k++)
+    {
+        for (int i = 0; i < 6; i++)
+        {
+            set_val(nuova, i, i, k, i);
+        }
+    }
+    ip_mat_show(nuova);
+
+    ip_mat *filtro4 = create_gaussian_filter(3, 3, 3, 5);
+    ip_mat_show(filtro4);
+
+    ip_mat *risultato = ip_mat_convolve(nuova, filtro4);
+
+    ip_mat_show(risultato);
+
+    /* rescale(input_img, 255);
+    compute_stats(input_img);
+    ip_mat_show_stats(input_img); */
+
+    /* Bitmap *grande = ip_mat_to_bitmap(risultato);
+    bm_save(grande, "gaussianUcinqueBIG.bmp"); */
 
     return 0;
 }

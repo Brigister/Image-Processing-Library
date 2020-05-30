@@ -1,15 +1,19 @@
-/*
- Created by Sebastiano Vascon on 23/03/20.
-*/
+/* Created by Sebastiano Vascon on 23/03/20.
+ *
+ * Gruppo 16 Antenna 5G
+ * 
+ * Simone Zanon 858807
+ * Francesco Favaro 859381
+ * Riccardo Nalgi 881667
+ * Manuel Boscolo 882852
+ */
 
 #include <stdio.h>
 #include "ip_lib.h"
 #include "bmp.h"
 
-#define E 2.71828182846
-
 /*controllo puntatore ip_mat = null*/
-void is_null(ip_mat *t)
+void null_checker(ip_mat *t)
 {
     if (t == NULL)
     {
@@ -20,8 +24,9 @@ void is_null(ip_mat *t)
 /*mostra canali matrice ed annessi valori*/
 void ip_mat_show(ip_mat *t)
 {
-    is_null(t);
     unsigned int i, l, j;
+
+    null_checker(t);
     printf("Matrix of size %d x %d x %d (hxwxk)\n", t->h, t->w, t->k);
     for (l = 0; l < t->k; l++)
     {
@@ -41,7 +46,7 @@ void ip_mat_show(ip_mat *t)
 void ip_mat_show_stats(ip_mat *t)
 {
     unsigned int k;
-    is_null(t);
+    null_checker(t);
     compute_stats(t);
 
     for (k = 0; k < t->k; k++)
@@ -80,10 +85,13 @@ ip_mat *bitmap_to_ip_mat(Bitmap *img)
 
 Bitmap *ip_mat_to_bitmap(ip_mat *t)
 {
-    is_null(t);
-    Bitmap *b = bm_create(t->w, t->h);
-
+    Bitmap *b;
     unsigned int i, j;
+
+    null_checker(t);
+
+    b = bm_create(t->w, t->h);
+
     for (i = 0; i < t->h; i++) /* rows */
     {
         for (j = 0; j < t->w; j++) /* columns */
@@ -98,7 +106,7 @@ Bitmap *ip_mat_to_bitmap(ip_mat *t)
 
 float get_val(ip_mat *a, unsigned int i, unsigned int j, unsigned int k)
 {
-    is_null(a);
+    null_checker(a);
     if (i < a->h && j < a->w && k < a->k)
     { /* j>=0 and k>=0 and i>=0 is non sense*/
         return a->data[i][j][k];
@@ -112,7 +120,7 @@ float get_val(ip_mat *a, unsigned int i, unsigned int j, unsigned int k)
 
 void set_val(ip_mat *a, unsigned int i, unsigned int j, unsigned int k, float v)
 {
-    is_null(a);
+    null_checker(a);
     if (i < a->h && j < a->w && k < a->k)
     {
         a->data[i][j][k] = v;
@@ -198,7 +206,7 @@ void ip_mat_free(ip_mat *a)
 {
     unsigned int i, j;
 
-    is_null(a);
+    null_checker(a);
     if (a != NULL)
     {
         free(a->stat);
@@ -224,7 +232,7 @@ void compute_stats(ip_mat *t)
 {
     unsigned int i, j, z;
 
-    is_null(t);
+    null_checker(t);
 
     for (z = 0; z < t->k; z++)
     {
@@ -261,8 +269,8 @@ ip_mat *ip_mat_sum(ip_mat *a, ip_mat *b)
 {
     unsigned int i, j, z;
 
-    is_null(a);
-    is_null(b);
+    null_checker(a);
+    null_checker(b);
 
     if (a->h != b->h || a->w != b->w || a->k != b->k)
     {
@@ -294,8 +302,8 @@ ip_mat *ip_mat_sub(ip_mat *a, ip_mat *b)
 {
     unsigned int i, j, z;
 
-    is_null(a);
-    is_null(b);
+    null_checker(a);
+    null_checker(b);
 
     if (a->h != b->h || a->w != b->w || a->k != b->k)
     {
@@ -327,7 +335,7 @@ ip_mat *ip_mat_subset(ip_mat *t, unsigned int row_start, unsigned int row_end, u
 {
     unsigned int i, j, z;
 
-    is_null(t);
+    null_checker(t);
     /* controllo che le dimensioni di input non sforino la ip_mat di partenza*/
     if (row_start <= row_end && row_end <= t->h && col_start <= col_end && col_end <= t->w)
     {
@@ -363,8 +371,8 @@ ip_mat *ip_mat_concat(ip_mat *a, ip_mat *b, int dimensione)
     unsigned int i, j, z;
     ip_mat *concatenata;
 
-    is_null(a);
-    is_null(b);
+    null_checker(a);
+    null_checker(b);
 
     /*check sul parametro in input dimensione e check essenziale sulle dimensioni delle ip_mat di input*/
     /*a-b devono avere le stesse dimensioni*/
@@ -480,7 +488,7 @@ ip_mat *ip_mat_copy(ip_mat *in)
     unsigned int i, j, z;
     ip_mat *copy;
 
-    is_null(in);
+    null_checker(in);
 
     /* creo una nuova matrice di dimensioni uguali a quella data e la inizializzo a 0 */
     copy = ip_mat_create(in->h, in->w, in->k, 00.0);
@@ -504,8 +512,8 @@ ip_mat *ip_mat_mean(ip_mat *a, ip_mat *b)
 {
     unsigned int i, j, z;
 
-    is_null(a);
-    is_null(b);
+    null_checker(a);
+    null_checker(b);
 
     /* verifico che le matrici date siano della stessa dimensione, altrimenti ritorno un printf di errore  */
     if (a->h != b->h || a->w != b->w || a->k != b->k)
@@ -543,7 +551,7 @@ ip_mat *ip_mat_mul_scalar(ip_mat *a, float c)
     float supp;
     ip_mat *nuova_ms;
 
-    is_null(a);
+    null_checker(a);
 
     nuova_ms = ip_mat_copy(a);
     for (i = 0; i < nuova_ms->h; i++)
@@ -566,7 +574,7 @@ ip_mat *ip_mat_add_scalar(ip_mat *a, float c)
     float supp;
     ip_mat *nuova_as;
 
-    is_null(a);
+    null_checker(a);
 
     nuova_as = ip_mat_copy(a);
     for (i = 0; i < nuova_as->h; i++)
@@ -590,7 +598,7 @@ void ip_mat_init_random(ip_mat *t, float mean, float var)
 {
     unsigned int i, j, z;
 
-    is_null(t);
+    null_checker(t);
 
     for (i = 0; i < t->h; i++)
         for (j = 0; j < t->w; j++)
@@ -610,8 +618,8 @@ void ip_mat_init_random(ip_mat *t, float mean, float var)
 ip_mat *ip_mat_blend(ip_mat *a, ip_mat *b, float alpha)
 {
 
-    is_null(a);
-    is_null(b);
+    null_checker(a);
+    null_checker(b);
 
     if (a->h != b->h || a->w != b->w || a->k != b->k)
     {
@@ -646,13 +654,12 @@ ip_mat *ip_mat_blend(ip_mat *a, ip_mat *b, float alpha)
 /*assegno questo valore nella posizione della ip_risultato, sui 3 canali -> il risultato avrà 3 canali dai valori uguali */
 ip_mat *ip_mat_to_gray_scale(ip_mat *in)
 {
+    unsigned int i, j;
     ip_mat *result;
 
-    is_null(in);
+    null_checker(in);
 
     result = ip_mat_create(in->h, in->w, in->k, 0);
-
-    unsigned int i, j;
 
     for (i = 0; i < in->h; i++)
     {
@@ -671,7 +678,7 @@ ip_mat *ip_mat_brighten(ip_mat *a, float bright)
 {
     ip_mat *result;
 
-    is_null(a);
+    null_checker(a);
 
     result = ip_mat_add_scalar(a, bright);
 
@@ -683,32 +690,16 @@ ip_mat *ip_mat_brighten(ip_mat *a, float bright)
 /* Sommo il valore precedentemente salvato con il valore generato per ottenere il valore corrotto e posiziono tutto nella sua posizione*/
 ip_mat *ip_mat_corrupt(ip_mat *a, float amount)
 {
-    /* unsigned int i, j, z; */
-    /* ip_mat *corrupted; */
+    ip_mat *temp;
+    ip_mat *corrupted;
     float std = amount / 2.0;
-    /* float a_val, rng, corrupted_val; */
 
-    is_null(a);
+    null_checker(a);
 
-    /* corrupted = ip_mat_create(a->h, a->w, a->k, 0.0);
-    for (i = 0; i < a->h; i++)
-    {
-        for (j = 0; j < a->w; j++)
-        {
-            for (z = 0; z < a->k; z++)
-            {
-                a_val = get_val(a, i, j, z);
-
-                rng = get_normal_random(0, std);
-                corrupted_val = a_val + (rng);
-                set_val(corrupted, i, j, z, corrupted_val);
-            }
-        }
-    } */
-    ip_mat *temp = ip_mat_copy(a);
+    temp = ip_mat_copy(a);
     ip_mat_init_random(temp, 0, std);
-    ip_mat *corrupted = ip_mat_sum(a, temp);
-    
+    corrupted = ip_mat_sum(a, temp);
+
     return corrupted;
 }
 
@@ -730,12 +721,10 @@ ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f)
     ip_mat *result;
     ip_mat *padding;
 
-    is_null(a);
-    is_null(f);
+    null_checker(a);
+    null_checker(f);
 
     padding = ip_mat_padding(a, pad_h, pad_w);
-    printf("paddata\n");
-    ip_mat_show(padding);
 
     result = ip_mat_create(a->h, a->w, a->k, 0.0);
 
@@ -750,7 +739,6 @@ ip_mat *ip_mat_convolve(ip_mat *a, ip_mat *f)
 
                 ip_mat *sub = ip_mat_subset(padding, i, f->h + i, j, f->w + j);
                 /* printf("sub  i = %d, j = %d\n", i, j); */
-                /* ip_mat_show(sub); */
 
                 for (r = 0; r < sub->h; r++)
                 {
@@ -784,7 +772,7 @@ ip_mat *ip_mat_padding(ip_mat *a, unsigned int pad_h, unsigned int pad_w)
     unsigned h = a->h + 2 * pad_h;
     unsigned w = a->w + 2 * pad_w;
 
-    is_null(a);
+    null_checker(a);
 
     result = ip_mat_create(h, w, a->k, 0.0);
 
@@ -869,11 +857,9 @@ ip_mat *create_emboss_filter()
 /* creazione filtro average w*h || se w=3 h=3 -> 3x3 c c c/ c c c / c c c  || c = 1/(w*h)  */
 ip_mat *create_average_filter(unsigned int w, unsigned int h, unsigned int k)
 {
-
-    /*il filtro puo essere negativo?*/
     float val = 1;
-    float jeez = h * w;
-    float avg = val / jeez;
+    float denom = h * w;
+    float avg = val / denom;
 
     ip_mat *avg_filter = ip_mat_create(w, h, k, avg);
 
@@ -890,12 +876,13 @@ ip_mat *create_gaussian_filter(unsigned int w, unsigned int h, unsigned int k, f
     /* 4) normalizzo il filtro, ovvero divido ogni valore per la somma di tutti i valori del filtro */
     /* et voilà */
     float sigma_quadrato = pow(sigma, 2.);
+    float somma;
     unsigned int i, j, z;
-    int x, y;
+
     /* prendo il  centro di una matrice w*h con w e h di input */
     int cx = (h - 1) / 2;
     int cy = (w - 1) / 2;
-    float somma = 0;
+
     /*  creo una nuova ip map wxhxk */
     ip_mat *gaussian_filter = ip_mat_create(w, h, k, 0.00);
     /* per ogni valori del ciclo calcolo le nuove distanze e le passo come valori nella funzione val_kernel_gaus
@@ -911,11 +898,11 @@ ip_mat *create_gaussian_filter(unsigned int w, unsigned int h, unsigned int k, f
             {
                 float kernel_val;
 
-                x = i - cx;
-                y = j - cy;
+                int x = i - cx;
+                int y = j - cy;
 
-                kernel_val = (1. / (2. * PI * sigma_quadrato)) * pow(E, -1 * (((pow(x, 2) + pow(y, 2))) / (2 * sigma_quadrato)));
-
+                /* kernel_val = (1. / (2. * PI * sigma_quadrato)) * pow(E, -1 * (((pow(x, 2) + pow(y, 2))) / (2 * sigma_quadrato))); */
+                kernel_val = (1. / (2. * PI * sigma_quadrato)) * exp(-1 * ((pow(x, 2) + pow(y, 2)) / (2 * sigma_quadrato)));
                 somma += kernel_val;
 
                 set_val(gaussian_filter, i, j, z, kernel_val);
@@ -936,7 +923,6 @@ ip_mat *create_gaussian_filter(unsigned int w, unsigned int h, unsigned int k, f
         }
     }
 
-    /* printf("la somma dei valori del filtro e' %lf\n", somma); */
     return gaussian_filter;
 }
 
@@ -946,7 +932,7 @@ void rescale(ip_mat *t, float new_max)
 {
     unsigned int i, j, z;
 
-    is_null(t);
+    null_checker(t);
     compute_stats(t);
 
     for (z = 0; z < t->k; z++)
@@ -988,7 +974,7 @@ void clamp(ip_mat *t, float low, float high)
 {
     unsigned int i, j, z;
 
-    is_null(t);
+    null_checker(t);
 
     for (i = 0; i < t->h; i++)
     {

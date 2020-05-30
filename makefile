@@ -1,7 +1,4 @@
-all: main.c ip_lib.o 
-	gcc main.c -o main ip_lib.o  -lm
-
-main: main_iplib.c ip_lib.o bmp.o
+all: main_iplib.c ip_lib.o bmp.o
 	gcc main_iplib.c -o main_iplib ip_lib.o bmp.o -Wall --ansi --pedantic -lm -g3 -O3 -fsanitize=address -fsanitize=undefined -std=gnu89 -Wextra  
 
 bmp.o: bmp.h
